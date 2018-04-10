@@ -1,6 +1,6 @@
 # crispr-indelphi-dataprocessinganalysis
 
-Processing Chain of Input/Output for Library data:
+Data Processing Pipeline
 
 b_alignment:
 - Input: Barcoded fasta files
