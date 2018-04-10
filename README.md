@@ -9,6 +9,7 @@ b_alignment:
 c6_polish:
 - Input: Above
 - Output: Alignments in text files in a folder, with filenames corresponding to alignment category. Same format as above.
+- Note: This script is different for VO and library data for several reasons (for example, free end gaps are disallowed in library data but allowed in VO data, requiring different processing approaches). For VO data, the input is text alignments converted from the SAM format.
 
 e_newgenotype:
 - Input: Above
