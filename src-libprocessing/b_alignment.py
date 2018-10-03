@@ -9,45 +9,25 @@ from mylib import util
 from mylib import compbio
 from itertools import izip
 import pickle
+import pandas as pd
 
 # Default params
-DEFAULT_INP_DIR = _config.OUT_PLACE + 'b3_splitunique/'
+inp_dir = _config.OUT_PLACE + 'a_split/'
 NAME = util.get_fn(__file__)
+out_place = _config.OUT_PLACE + NAME + '/'
+util.ensure_dir_exists(out_place)
+exp_design = pd.read_csv(_config.DATA_DIR + 'LibA.csv')
 
-##
-# gRNA and mismatch
-##
-def get_grna_idx(read):
-  cand_idxs = None
-  if read[:5] == 'GACGT':
-    len_bc = len('GACGTcgatGGAAAGGACGAAACACCG')
-  if read[:5] == 'GTGAC':
-    len_bc = len('GTGACGGAAAGGACGAAACACCG')
-  if read[:5] == 'AACGG':
-    len_bc = len('AACGGGAAAGGACGAAACACCG')
-  if read[:5] == 'CAGGG':
-    len_bc = len('CAGGGAAAGGACGAAACACCG')
-  grna = read[len_bc : len_bc + 20]
-  if grna[0] == 'G':
-    grna = read[len_bc - 1 : len_bc + 19]
-  if grna in _config.d.GRNAS:
-    return [_config.d.GRNAS.index(grna)]
-  else:
-    cand_idxs = []
-    for idx, s in enumerate(_config.d.GRNAS):
-      if dist(grna, s) == 1:
-        cand_idxs.append(idx)
-    return cand_idxs
-
-def dist(grna, ref):
-  return sum([bool(c1!=c2) for c1,c2 in zip(grna, ref)])
+names_targets = dict()
+for idx, row in exp_design.iterrows():
+  names_targets[row['Name']] = row['Full target sequence']
 
 ##
 # Alignments
 ##
 def alignment(read, cand_idxs):
   seq_align_tool = '/cluster/mshen/tools/seq-align/bin/needleman_wunsch'
-  targets = [_config.d.TARGETS[i] for i in cand_idxs]
+  targets = [names_targets[nm] for nm in cand_idxs]
   aligns = []
   for target_seq in targets:
     try:
@@ -83,10 +63,11 @@ def pick_best_alignment(aligns):
 ##
 def build_targets_better_lsh():
   lsh_dict = defaultdict(list)
-  for exp, target in enumerate(_config.d.TARGETS):
+  for nm in names_targets:
+    target = names_targets[nm]
     kmers = get_lsh_kmers(target)
     for kmer in kmers:
-      lsh_dict[kmer].append(exp)
+      lsh_dict[kmer].append(nm)
   return lsh_dict
 
 def get_lsh_kmers(target):
@@ -97,8 +78,7 @@ def get_lsh_kmers(target):
     kmers.append(kmer)
   return kmers
 
-def find_best_designed_target(read, cand_idxs, lsh_dict):
-  new_cand_idxs = copy.copy(cand_idxs)
+def find_best_designed_target(read, lsh_dict):
   kmers = get_lsh_kmers(read)
   scores = dict()
   for kmer in kmers:
@@ -106,21 +86,19 @@ def find_best_designed_target(read, cand_idxs, lsh_dict):
       if exp not in scores:
         scores[exp] = 0
       scores[exp] += 1
-  best_exp = sorted(scores, key = scores.get)[-1]
-  best_score = max(scores.values())
 
-  cand_scores = [-5]
-  for cand in cand_idxs:
-    if cand in scores:
-      cand_scores.append(scores[cand])
-  best_cand_score = max(cand_scores)
-  
-  if best_cand_score + 5 >= best_score:
-    # If found gRNA matches well, then don't add more candidates. This helps with similar designed targets.
-    pass
-  else:
-    new_cand_idxs.append(best_exp)
-  return new_cand_idxs
+  if len(scores) == 0:
+    return []
+
+  sorted_scores = sorted(scores, key = scores.get, reverse = True)
+  best_score = scores[sorted_scores[0]]
+  # cand_idxs = []
+  # for exp in sorted_scores:
+  #   if scores[exp] + 5 < best_score:
+  #     break
+  #   cand_idxs.append(exp)
+  cand_idxs = [sorted_scores[0]]
+  return cand_idxs
 
 ##
 # IO
@@ -145,7 +123,7 @@ def flush_alignments(alignment_buffer, out_dir):
   return
 
 def prepare_outfns(out_dir):
-  for exp in range(2000):
+  for exp in names_targets:
     out_fn = out_dir + '%s.txt' % (exp)
     util.exists_empty_fn(out_fn)
   return
@@ -153,70 +131,62 @@ def prepare_outfns(out_dir):
 ##
 # Main
 ##
-def matchmaker(inp_dir, out_dir, nm, split):
+def matchmaker(nm, split):
   print nm, split
   stdout_fn = _config.SRC_DIR + 'nh_c_%s_%s.out' % (nm, split)
   util.exists_empty_fn(stdout_fn)
-  out_dir = out_dir + nm + '/' + split + '/'
+  out_dir = out_place + nm + '/' + split + '/'
   util.ensure_dir_exists(out_dir)
-  inp_fn = inp_dir + nm + '/' + split + '.fa'
 
-  count = 0
-  num_recombined = 0
-  num_unmatched_grnas = 0
-  total = 0
+  inp_fn = inp_dir + '%s_r2_%s.fq' % (nm, split)
 
   lsh_dict = build_targets_better_lsh()
   alignment_buffer = init_alignment_buffer()
 
   prepare_outfns(out_dir)
 
+  qf = 0
+
   tot_reads = util.line_count(inp_fn)
   timer = util.Timer(total = tot_reads)
+  from itertools import izip
   with open(inp_fn) as f:
     for i, line in enumerate(f):
-      if i % 2 == 0:
-        count = int(line.replace('>', ''))
-      if i % 2 == 1:
-        [l1, l2] = line.split()
-        l2 = compbio.reverse_complement(l2)
-        align_header = '>%s' % (count)
+      if i % 4 == 0:
+        pass
+      if i % 4 == 1:
+        l2 = line.strip()
+      if i % 4 == 3:
+        # Quality filter
+        q2 = line.strip()
+        qs = [ord(s)-33 for s in q2]
+        if np.mean(qs) < 28:
+          qf += 1
+          continue
 
-        # Try to find designed target from gRNA
-        gRNA_cand_idxs = get_grna_idx(l1)
-        if len(gRNA_cand_idxs) == 0:
-          num_unmatched_grnas += count
-          align_header += '_matchedgRNA-false'
-        else:
-          align_header += '_matchedgRNA-true'
+        l2 = compbio.reverse_complement(l2)
+        align_header = '>1'
 
         # Try to find designed target from LSH
-        cand_idxs = find_best_designed_target(l2[-55:], gRNA_cand_idxs, lsh_dict)
+        cand_idxs = find_best_designed_target(l2, lsh_dict)
+        if len(cand_idxs) == 0:
+          continue
 
         # Run alignment
-        best_idx, align = alignment(l2.strip(), cand_idxs)
-
-        # Determine if recombination occurred -- did LSH candidate get used?
-        if best_idx not in gRNA_cand_idxs and len(gRNA_cand_idxs) > 0:
-          num_recombined += count
-          align_header += '_recombined-true'
-        else:
-          align_header += '_recombined-false'
-        total += count
+        best_idx, align = alignment(l2, cand_idxs)
 
         # Store alignment into buffer
         store_alignment(alignment_buffer, best_idx, align_header, align)
 
-        if i % int(tot_reads / 100) == 1 and i > 1:
-          # Flush alignment buffer
-          flush_alignments(alignment_buffer, out_dir)
+      if i % int(tot_reads / 100) == 1 and i > 1:
+        # Flush alignment buffer
+        flush_alignments(alignment_buffer, out_dir)
 
-          # Stats for the curious
-          with open(stdout_fn, 'a') as outf:
-            outf.write('Time: %s\n' % (datetime.datetime.now()))
-            outf.write('Progress: %s\n' % (i / int(tot_reads / 100)) )
-            outf.write('Matched gRNA rate / total barcoded reads: %s\n' % (1 - num_unmatched_grnas/total) )
-            outf.write('Recombination rate / matched gRNAs: %s\n' % (num_recombined / (total - num_unmatched_grnas)))
+        # Stats for the curious
+        with open(stdout_fn, 'a') as outf:
+          outf.write('Time: %s\n' % (datetime.datetime.now()))
+          outf.write('Progress: %s\n' % (i / int(tot_reads / 100)) )
+          outf.write('Quality filtered pct: %s\n' % (qf / (i/4)))
       timer.update()
   
   # Final flush
@@ -224,19 +194,53 @@ def matchmaker(inp_dir, out_dir, nm, split):
 
   return
 
+##
+# qsub
+##
+def gen_qsubs():
+  # Generate qsub shell scripts and commands for easy parallelization
+  print 'Generating qsub scripts...'
+  qsubs_dir = _config.QSUBS_DIR + NAME + '/'
+  util.ensure_dir_exists(qsubs_dir)
+  qsub_commands = []
+
+  num_scripts = 0
+  for _nm in ['051018_U2OS_+_LibA_preCas9', '052218_U2OS_+_LibA_postCas9_rep1', '052218_U2OS_+_LibA_postCas9_rep2']:
+    for _split in range(60):
+      command = 'python %s.py %s %s' % (NAME, _nm, _split)
+      script_id = NAME.split('_')[0]
+
+      # Write shell scripts
+      sh_fn = qsubs_dir + 'q_%s_%s_%s.sh' % (script_id, _nm, _split)
+      with open(sh_fn, 'w') as f:
+        f.write('#!/bin/bash\n%s\n' % (command))
+      num_scripts += 1
+
+      # Write qsub commands
+      qsub_commands.append('qsub -m e -wd %s %s' % (_config.SRC_DIR, sh_fn))
+
+  # Save commands
+  with open(qsubs_dir + '_commands.txt', 'w') as f:
+    f.write('\n'.join(qsub_commands))
+
+  print 'Wrote %s shell scripts to %s' % (num_scripts, qsubs_dir)
+  return
 
 @util.time_dec
-def main(inp_dir, out_dir, nm = '', split = ''):
+def main(nm = '', split = ''):
   print NAME  
-  util.ensure_dir_exists(out_dir)
+
+  if nm == '' and split == '':
+    gen_qsubs()
+    return
 
   # Function calls
-  matchmaker(inp_dir, out_dir, nm, split) 
-  return out_dir
+  matchmaker(nm, split) 
+  return
 
 
 if __name__ == '__main__':
-  if len(sys.argv) == 3:
-    main(DEFAULT_INP_DIR, _config.OUT_PLACE + NAME + '/', nm = sys.argv[1], split = sys.argv[2])
+  if len(sys.argv) > 2:
+    main(nm = sys.argv[1], split = sys.argv[2])
   else:
-    main(DEFAULT_INP_DIR, _config.OUT_PLACE + NAME + '/', nm = 'GH', split = '0')
+    main()

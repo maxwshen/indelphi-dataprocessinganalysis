@@ -1,6 +1,6 @@
 # 
 from __future__ import division
-import _config, _lib
+import _config
 import sys, os, fnmatch, datetime, subprocess
 sys.path.append('/cluster/mshen/')
 import numpy as np
@@ -10,8 +10,10 @@ from itertools import izip
 import pickle
 
 # Default params
-DEFAULT_INP_DIR = _config.OUT_PLACE + 'b_alignment/'
+inp_place = _config.OUT_PLACE + 'b_alignment/'
 NAME = util.get_fn(__file__)
+out_place = _config.OUT_PLACE + NAME + '/'
+util.ensure_dir_exists(out_place)
 
 global expected_cutsite
 
@@ -627,7 +629,7 @@ def gen_qsubs():
   qsub_commands = []
 
   num_scripts = 0
-  for bc in ['GH', 'IJ']:
+  for bc in ['051018_U2OS_+_LibA_preCas9', '052218_U2OS_+_LibA_postCas9_rep2', '052218_U2OS_+_LibA_postCas9_rep1']:
     for start in range(0, 2000, 100):
       end = start + 99
       command = 'python %s.py %s %s %s' % (NAME, bc, start, end)
@@ -650,9 +652,8 @@ def gen_qsubs():
   return
 
 @util.time_dec
-def main(inp_dir, out_dir, nm = '', start = '', end = ''):
+def main(nm = '', start = '', end = ''):
   print NAME  
-  util.ensure_dir_exists(out_dir)
   print nm
 
   if nm == '' and start == '' and end == '':
@@ -660,7 +661,7 @@ def main(inp_dir, out_dir, nm = '', start = '', end = ''):
     return
 
   start, end = int(start), int(end)
-  out_dir = out_dir + nm +'/'
+  out_dir = out_place + nm +'/'
   util.ensure_dir_exists(out_dir)
 
   print 'Preparing alignment output directories...'
@@ -670,7 +671,7 @@ def main(inp_dir, out_dir, nm = '', start = '', end = ''):
   global expected_cutsite
   expected_cutsite = len('TCCGTGCTGTAACGAAAGGATGGGTGCGACGCGTCAT') + 27
 
-  inp_dir = inp_dir + nm + '/'
+  inp_dir = inp_place + nm + '/'
 
   timer = util.Timer(total = end - start + 1)
   for iter_exp in range(start, end + 1):
@@ -683,11 +684,11 @@ def main(inp_dir, out_dir, nm = '', start = '', end = ''):
     save_alignments(data, out_dir, iter_exp)
     timer.update()
 
-  return out_dir
+  return
 
 
 if __name__ == '__main__':
   if len(sys.argv) > 1:
-    main(DEFAULT_INP_DIR, _config.OUT_PLACE + NAME + '/', nm = sys.argv[1], start = sys.argv[2], end = sys.argv[3])
+    main(nm = sys.argv[1], start = sys.argv[2], end = sys.argv[3])
   else:
-    main(DEFAULT_INP_DIR, _config.OUT_PLACE + NAME + '/')
+    main()

@@ -1,6 +1,6 @@
 import sys
 
-PRJ_DIR = '/cluster/mshen/prj/mmej_manda3/subprjs/lib1_mESC/'  
+PRJ_DIR = '/cluster/mshen/prj/inDelphi/subprjs/revision-180622Gif/subprjs/libA/'
 SRC_DIR = PRJ_DIR + 'src/'
 
 # toy = True
@@ -11,17 +11,16 @@ if toy:
 # Note: Directories should end in / always
 #######################################################
 DATA_DIR = PRJ_DIR + 'data/'
-QSUBS_DIR = PRJ_DIR + 'qsubs/'
 OUT_PLACE = PRJ_DIR + 'out/'
 RESULTS_PLACE = PRJ_DIR + 'results/'
+QSUBS_DIR = PRJ_DIR + 'qsubs/'
 #######################################################
 #######################################################
 
 CLEAN = False       # Values = 'ask', True, False
 
 # which data are we using? import that data's parameters
-# DATA_FOLD = '2017-10-27/'
-# DATA_FOLD = '2018-01-05/'
+# DATA_FOLD = 'rename_me/'
 DATA_FOLD = ''
 
 sys.path.insert(0, DATA_DIR + DATA_FOLD)
@@ -30,6 +29,7 @@ print 'Using data folder:\n', DATA_DIR + DATA_FOLD
 DATA_DIR += DATA_FOLD
 OUT_PLACE += DATA_FOLD
 RESULTS_PLACE += DATA_FOLD
+QSUBS_DIR += DATA_FOLD
 
 #######################################################
 # Project-specific parameters

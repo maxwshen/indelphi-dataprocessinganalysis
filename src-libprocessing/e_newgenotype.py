@@ -1,6 +1,6 @@
 # 
 from __future__ import division
-import _config, _lib
+import _config
 import sys, os, fnmatch, datetime, subprocess, math, pickle, imp
 sys.path.append('/cluster/mshen/')
 import fnmatch
@@ -20,10 +20,7 @@ crispr_cutsite = None
 # Data manipulation
 ##
 def parse_header(header):
-  [cs, mgs, rcs] = header.split('_')
-  count = int(cs.replace('>', ''))
-  matchgrna_bool = mgs.replace('matchedgRNA-', '')
-  recombined_bool = rcs.replace('recombined-', '')
+  count = int(header.replace('>', '').replace('_', ''))
   return count
 
 def get_indel_length(seq):
@@ -657,11 +654,16 @@ def genotype_data(inp_dir, out_dir, nm, start, end):
 
     timer.update()
 
-  master_df['_Sequence Context'] = ['TCCGTGCTGTAACGAAAGGATGGGTGCGACGCGTCAT' + _config.d.TARGETS[s] for s in master_df['_Experiment']]
+  lib_table = pd.read_csv(_config.DATA_DIR + 'LibA.csv')
+  seq_contexts = []
+  for s in master_df['_Experiment']:
+    crit = (lib_table['Name'] == s)
+    seq = lib_table[crit]['Full target sequence'].iloc[0]
+    seq_contexts.append(seq)
+  master_df['_Sequence Context'] = seq_contexts
+
   master_df['_Cutsite'] = crispr_cutsite
 
-  with open(out_dir + '%s_genotypes_%s.pkl' % (nm, start), 'w') as f:
-    pickle.dump(master_df, f)
   master_df.to_csv(out_dir + '%s_genotypes_%s.csv' % (nm, start))
   return
 
@@ -676,7 +678,7 @@ def gen_qsubs():
   qsub_commands = []
 
   num_scripts = 0
-  for bc in ['GH', 'IJ']:
+  for bc in ['051018_U2OS_+_LibA_preCas9', '052218_U2OS_+_LibA_postCas9_rep2', '052218_U2OS_+_LibA_postCas9_rep1']:
     for start in range(0, 2000, 100):
       end = start + 99
       command = 'python %s.py %s %s %s' % (NAME, bc, start, end)
