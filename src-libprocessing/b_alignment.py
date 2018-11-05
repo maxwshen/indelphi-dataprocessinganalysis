@@ -181,6 +181,7 @@ def matchmaker(nm, split):
       if i % int(tot_reads / 100) == 1 and i > 1:
         # Flush alignment buffer
         flush_alignments(alignment_buffer, out_dir)
+        alignment_buffer = init_alignment_buffer()
 
         # Stats for the curious
         with open(stdout_fn, 'a') as outf:
