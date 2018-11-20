@@ -25,3 +25,17 @@ e10_control_adjustment:
 Data are then in an appropriate format for modeling and analysis.
 
 Experiments with multiple replicates are combined using the \_data.py script in /src-modeling-analysis.
+
+### FAQ
+
+##### Are the processed data available?
+
+The fully processed data is available at https://doi.org/10.6084/m9.figshare.6838016, https://doi.org/10.6084/m9.figshare.6837959, https://doi.org/10.6084/m9.figshare.6837956, https://doi.org/10.6084/m9.figshare.6837953, and https://doi.org/10.6084/m9.figshare.6837947.
+
+These data are derived from the raw reads using the data processing code in this github. Briefly, this involves demultiplexing the reads, performing sequence alignment, shifting sequence alignment into a standardized format and data quality filtering. The output is a table of all observed genotypes in a standardized format, which should be the appropriate starting point for many users interested in our data. Unless your desired analysis unambiguously requires starting from the raw data, I would recommend starting from the processed data we have provided.
+
+##### What is the structure of the raw reads?
+
+The shorter read 1 contains the gRNA and the longer read 2 contains the designed 55-bp target site. In the case of a single sequencing read, this corresponds to the designed 55-bp target site. Read 1 containing the gRNA is not used in data processing. The 55-bp target sites designed for each library is available in SupplementaryData.xlsx. 
+
+In read 2, the 55-bp target site is placed after a constant sequence such as "TCCGTGCTGTAACGAAAGGATGGGTGCGACGCGTCAT". Immediately following the 55-bp target site is the read 2 sequencing primer.
