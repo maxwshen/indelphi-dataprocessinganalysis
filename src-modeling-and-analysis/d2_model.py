@@ -423,7 +423,7 @@ if __name__ == '__main__':
     # master_data = pickle.load(open(inp_dir + 'dataset_try1.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try2.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try3.pkl'))
-    master_data = pickle.load(open(inp_dir + 'inDelphi_counts_and_deletion_features.pkl'))
+    master_data = pickle.load(open(inp_dir + 'inDelphi_counts_and_deletion_features.pkl', 'rb'))
 
     '''
   Unpack data from e11_dataset
