@@ -1,0 +1,3 @@
+[submodule "mylib"]
+	path = mylib
+	url = git@github.com:maxwshen/mylib.git
