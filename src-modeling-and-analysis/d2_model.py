@@ -8,8 +8,6 @@ import autograd.numpy.random as npr
 import matplotlib
 from autograd import multigrad
 from autograd.util import flatten
-
-matplotlib.use('Pdf')
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import pickle, subprocess, os, datetime
@@ -20,7 +18,7 @@ from sklearn.model_selection import train_test_split
 from matplotlib.backends.backend_pdf import PdfPages
 
 NAME = util.get_fn(__file__)
-
+matplotlib.use('Pdf')
 
 ### Define neural network ###
 def relu(x):       return np.maximum(0, x)
@@ -302,11 +300,11 @@ def save_rsq_params_csv(nms, rsqs, nn2_params, out_dir, iter_nm, data_type):
 def save_train_test_names(train_nms, test_nms, out_dir):
     with open(out_dir + 'train_exps.csv', 'w') as f:
         f.write(','.join(['Exp']) + '\n')
-        for i in xrange(len(train_nms)):
+        for i in range(len(train_nms)):
             f.write(','.join([train_nms[i]]) + '\n')
     with open(out_dir + 'test_exps.csv', 'w') as f:
         f.write(','.join(['Exp']) + '\n')
-        for i in xrange(len(test_nms)):
+        for i in range(len(test_nms)):
             f.write(','.join([test_nms[i]]) + '\n')
     return
 
@@ -396,7 +394,7 @@ def plot_pred_obs(nn_params, nn2_params, inp, obs, del_lens, nms, datatype, lett
 # Setup / Run Main
 ##
 if __name__ == '__main__':
-    out_place = '/cluster/mshen/prj/mmej_figures/out/%s/' % (NAME)
+    out_place = '/cluster/mshen/prj/mmej_figures/out/d2_model/'
     util.ensure_dir_exists(out_place)
     num_folds = count_num_folders(out_place)
     out_letters = alphabetize(num_folds + 1)
@@ -421,11 +419,11 @@ if __name__ == '__main__':
     nn2_layer_sizes = [1, 16, 16, 1]
 
     print_and_log("Loading data...", log_fn)
-    inp_dir = '/cluster/mshen/prj/mmej_figures/out/c2_model_dataset/'
+    inp_dir = '../pickle-data/'
     # master_data = pickle.load(open(inp_dir + 'dataset_try1.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try2.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try3.pkl'))
-    master_data = pickle.load(open(inp_dir + 'dataset_try4.pkl'))
+    master_data = pickle.load(open(inp_dir + 'inDelphi_counts_and_deletion_features.pkl'))
 
     '''
   Unpack data from e11_dataset
