@@ -429,13 +429,22 @@ if __name__ == '__main__':
     # master_data = pickle.load(open(inp_dir + 'dataset_try1.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try2.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try3.pkl'))
-    master_data = pd.read_pickle(open(inp_dir + 'inDelphi_counts_and_deletion_features.pkl', 'rb'))
+
+    # master_data = pickle.load(open(inp_dir + 'inDelphi_counts_and_deletion_features.pkl'))
+    master_data = pickle.load(open("../pickle-data/inDelphi_counts_and_deletion_features.pkl", "rb"))
 
     '''
   Unpack data from e11_dataset
   '''
-    counts, del_features = master_data
-    [exps, mh_lens, gc_fracs, del_lens, freqs, dl_freqs] = master_data
+
+    res = pd.merge(master_data['counts'], master_data['del_features'], left_on=master_data['counts'].index, right_on=master_data['del_features'].index)
+    mh_lens = res['homologyLength']
+    gc_fracs = res['homologyGCContent']
+    del_lens = res['Size']
+    exps = res['Type']
+    freqs = res['countEvents']
+    dl_freqs = res['fraction']
+
     INP = []
     for mhl, gcf in zip(mh_lens, gc_fracs):
         inp_point = np.array([mhl, gcf]).T  # N * 2
