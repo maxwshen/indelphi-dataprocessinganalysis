@@ -3,19 +3,25 @@
 from __future__ import absolute_import, division
 from __future__ import print_function
 
+import datetime
+import os
+import pickle
+import subprocess
+from collections import defaultdict
+
 import autograd.numpy as np
 import autograd.numpy.random as npr
 import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 from autograd import multigrad
 from autograd.util import flatten
-import matplotlib.pyplot as plt
-from collections import defaultdict
-import pickle, subprocess, os, datetime
-from mylib import util
-import seaborn as sns, pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
 from scipy.stats import pearsonr
 from sklearn.model_selection import train_test_split
-from matplotlib.backends.backend_pdf import PdfPages
+
+from mylib import util
 
 NAME = util.get_fn(__file__)
 matplotlib.use('Pdf')
@@ -292,7 +298,7 @@ def rsq(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples, rs):
 def save_rsq_params_csv(nms, rsqs, nn2_params, out_dir, iter_nm, data_type):
     with open(out_dir + iter_nm + '_' + data_type + '_rsqs_params.csv', 'w') as f:
         f.write(','.join(['Exp', 'Rsq']) + '\n')
-        for i in xrange(len(nms)):
+        for i in range(len(nms)):
             f.write(','.join([nms[i], str(rsqs[i])]) + '\n')
     return
 
@@ -394,7 +400,7 @@ def plot_pred_obs(nn_params, nn2_params, inp, obs, del_lens, nms, datatype, lett
 # Setup / Run Main
 ##
 if __name__ == '__main__':
-    out_place = '/cluster/mshen/prj/mmej_figures/out/d2_model/'
+    out_place = './cluster/mshen/prj/mmej_figures/out/d2_model/'
     util.ensure_dir_exists(out_place)
     num_folds = count_num_folders(out_place)
     out_letters = alphabetize(num_folds + 1)
@@ -423,11 +429,12 @@ if __name__ == '__main__':
     # master_data = pickle.load(open(inp_dir + 'dataset_try1.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try2.pkl'))
     # master_data = pickle.load(open(inp_dir + 'dataset_try3.pkl'))
-    master_data = pickle.load(open(inp_dir + 'inDelphi_counts_and_deletion_features.pkl', 'rb'))
+    master_data = pd.read_pickle(open(inp_dir + 'inDelphi_counts_and_deletion_features.pkl', 'rb'))
 
     '''
   Unpack data from e11_dataset
   '''
+    counts, del_features = master_data
     [exps, mh_lens, gc_fracs, del_lens, freqs, dl_freqs] = master_data
     INP = []
     for mhl, gcf in zip(mh_lens, gc_fracs):

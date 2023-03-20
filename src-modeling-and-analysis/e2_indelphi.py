@@ -1,6 +1,6 @@
 from __future__ import division
 import _config, _lib, _data, _predict, _predict2
-import sys, os, datetime, subprocess, math, pickle, imp, fnmatch
+import sys, os, pickle
 sys.path.append('/cluster/mshen/')
 import numpy as np
 from collections import defaultdict
@@ -8,11 +8,7 @@ from mylib import util
 import pandas as pd
 import matplotlib
 matplotlib.use('Pdf')
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-import seaborn as sns
 from scipy.stats import pearsonr, entropy
-import e_ins_modeling
 
 # Default params
 DEFAULT_INP_DIR = None
