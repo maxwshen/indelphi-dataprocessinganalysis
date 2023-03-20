@@ -438,12 +438,20 @@ if __name__ == '__main__':
   '''
 
     res = pd.merge(master_data['counts'], master_data['del_features'], left_on=master_data['counts'].index, right_on=master_data['del_features'].index)
-    mh_lens = res['homologyLength']
-    gc_fracs = res['homologyGCContent']
-    del_lens = res['Size']
-    exps = res['Type']
-    freqs = res['countEvents']
-    dl_freqs = res['fraction']
+    res[['sample', 'offset']] = pd.DataFrame(res['key_0'].tolist(), index=res.index)
+    mh_lens = []
+    gc_fracs = []
+    del_lens = []
+    exps = []
+    freqs = []
+    dl_freqs = []
+    for group in res.groupby("sample"):
+        mh_lens.append(group[1]['homologyLength'].values)
+        gc_fracs.append(group[1]['homologyGCContent'].values)
+        del_lens.append(group[1]['Size'].values)
+        exps.append(group[1]['Type'].values)
+        freqs.append(group[1]['countEvents'].values)
+        dl_freqs.append(group[1]['fraction'].values)
 
     INP = []
     for mhl, gcf in zip(mh_lens, gc_fracs):
