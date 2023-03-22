@@ -108,46 +108,46 @@ def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples,
         rsq = (pearson_numerator / pearson_denom) ** 2
         neg_rsq = rsq * -1
         LOSS += neg_rsq
+
         #
-        # #
-        # # I want to make sure nn2 never outputs anything negative.
-        # # Sanity check during training.
-        # #
+        # I want to make sure nn2 never outputs anything negative.
+        # Sanity check during training.
         #
-        # ##
-        # # Deletion length frequencies, only up to 28
-        # #   (Restricts training to library data, else 27 bp.)
-        # ##
-        # dls = np.arange(1, 28 + 1)
-        # dls = dls.reshape(28, 1)
-        # nn2_scores = nn_match_score_function(nn2_params, dls)
-        # unnormalized_nn2 = np.exp(nn2_scores - 0.25 * np.arange(1, 28 + 1))
-        #
-        # # iterate through del_lens vector, adding mh_scores (already computed above) to the correct index
-        # mh_contribution = np.zeros(28, )
-        # for jdx in range(len(Js)):
-        #     dl = Js[jdx]
-        #     if dl > 28:
-        #         break
-        #     mhs = np.exp(mh_scores[jdx] - 0.25 * dl)
-        #     mask = np.concatenate([np.zeros(dl - 1, ), np.ones(1, ) * mhs, np.zeros(28 - (dl - 1) - 1, )])
-        #     mh_contribution = mh_contribution + mask
-        # unnormalized_nn2 = unnormalized_nn2 + mh_contribution
-        # normalized_fq = np.divide(unnormalized_nn2, np.sum(unnormalized_nn2))
-        #
-        # # Pearson correlation squared loss
-        # x_mean = np.mean(normalized_fq)
-        # y_mean = np.mean(obs2[idx])
-        # pearson_numerator = np.sum((normalized_fq - x_mean) * (obs2[idx] - y_mean))
-        # pearson_denom_x = np.sqrt(np.sum((normalized_fq - x_mean) ** 2))
-        # pearson_denom_y = np.sqrt(np.sum((obs2[idx] - y_mean) ** 2))
-        # pearson_denom = pearson_denom_x * pearson_denom_y
-        # rsq = (pearson_numerator / pearson_denom) ** 2
-        # neg_rsq = rsq * -1
-        # LOSS += neg_rsq
-        #
-        # # L2-Loss
-        # # LOSS += np.sum((normalized_fq - obs[idx])**2)
+
+        ##
+        # Deletion length frequencies, only up to 28
+        #   (Restricts training to library data, else 27 bp.)
+        ##
+        dls = np.arange(1, 28 + 1)
+        dls = dls.reshape(28, 1)
+        nn2_scores = nn_match_score_function(nn2_params, dls)
+        unnormalized_nn2 = np.exp(nn2_scores - 0.25 * np.arange(1, 28 + 1))
+
+        # iterate through del_lens vector, adding mh_scores (already computed above) to the correct index
+        mh_contribution = np.zeros(28, )
+        for jdx in range(len(Js)):
+            dl = Js[jdx]
+            if dl > 28:
+                break
+            mhs = np.exp(mh_scores[jdx] - 0.25 * dl)
+            mask = np.concatenate([np.zeros(dl - 1, ), np.ones(1, ) * mhs, np.zeros(28 - (dl - 1) - 1, )])
+            mh_contribution = mh_contribution + mask
+        unnormalized_nn2 = unnormalized_nn2 + mh_contribution
+        normalized_fq = np.divide(unnormalized_nn2, np.sum(unnormalized_nn2))
+
+        # Pearson correlation squared loss
+        x_mean = np.mean(normalized_fq)
+        y_mean = np.mean(obs2[idx])
+        pearson_numerator = np.sum((normalized_fq - x_mean) * (obs2[idx][0:28] - y_mean))
+        pearson_denom_x = np.sqrt(np.sum((normalized_fq - x_mean) ** 2))
+        pearson_denom_y = np.sqrt(np.sum((obs2[idx] - y_mean) ** 2))
+        pearson_denom = pearson_denom_x * pearson_denom_y
+        rsq = (pearson_numerator / pearson_denom) ** 2
+        neg_rsq = rsq * -1
+        LOSS += neg_rsq
+
+        # L2-Loss
+        # LOSS += np.sum((normalized_fq - obs[idx])**2)
     return LOSS / num_samples
 
 
