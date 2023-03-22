@@ -15,8 +15,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from autograd import multigrad
-from autograd.util import flatten
+from autograd.differential_operators import multigrad_dict as multigrad
+from autograd.misc.flatten import flatten
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.stats import pearsonr
 from sklearn.model_selection import train_test_split
@@ -73,7 +73,7 @@ def nn_match_score_function(params, inputs):
 ##
 # Objective
 ##
-def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples, rs):
+def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples):
     LOSS = 0
     for idx in range(len(inp)):
 
@@ -173,7 +173,9 @@ def adam_minmin(grad_both, init_params_nn, init_params_nn2, callback=None, num_i
     m_nn, v_nn = np.zeros(len(x_nn)), np.zeros(len(x_nn))
     m_nn2, v_nn2 = np.zeros(len(x_nn2)), np.zeros(len(x_nn2))
     for i in range(num_iters):
-        g_nn_uf, g_nn2_uf = grad_both(unflatten_nn(x_nn), unflatten_nn2(x_nn2), i)
+        print(f"Optimization iteration {i}")
+        output = grad_both(unflatten_nn(x_nn), unflatten_nn2(x_nn2))
+        g_nn_uf, g_nn2_uf = (output["nn_params"], output["nn2_params"])
         g_nn, _ = flatten(g_nn_uf)
         g_nn2, _ = flatten(g_nn2_uf)
 
@@ -236,8 +238,8 @@ def print_and_log(text, log_fn):
 # Plotting and Writing
 ##
 def save_parameters(nn_params, nn2_params, out_dir_params, letters):
-    pickle.dump(nn_params, open(out_dir_params + letters + '_nn.pkl', 'w'))
-    pickle.dump(nn2_params, open(out_dir_params + letters + '_nn2.pkl', 'w'))
+    pickle.dump(nn_params, open(out_dir_params + letters + '_nn.pkl', 'wb'))
+    pickle.dump(nn2_params, open(out_dir_params + letters + '_nn2.pkl', 'wb'))
     return
 
 
@@ -457,12 +459,12 @@ if __name__ == '__main__':
     for mhl, gcf in zip(mh_lens, gc_fracs):
         inp_point = np.array([mhl, gcf]).T  # N * 2
         INP.append(inp_point)
-    INP = np.array(INP)  # 2000 * N * 2
+    INP = np.array(INP, dtype=object)  # 2000 * N * 2
     # Neural network considers each N * 2 input, transforming it into N * 1 output.
-    OBS = np.array(freqs)
-    OBS2 = np.array(dl_freqs)
+    OBS = np.array(freqs, dtype=object)
+    OBS2 = np.array(dl_freqs, dtype=object)
     NAMES = np.array([str(s) for s in exps])
-    DEL_LENS = np.array(del_lens)
+    DEL_LENS = np.array(del_lens, dtype=object)
 
     ans = train_test_split(INP, OBS, OBS2, NAMES, DEL_LENS, test_size=0.15, random_state=seed)
     INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = ans
@@ -490,12 +492,11 @@ if __name__ == '__main__':
         return slice(idx * batch_size, (idx + 1) * batch_size)
 
 
-    def objective(nn_params, nn2_params, iter):
-        idx = batch_indices(iter)
-        return main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size, seed)
+    def objective(nn_params, nn2_params):
+        return main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size)
 
 
-    both_objective_grad = multigrad(objective, argnums=[0, 1])
+    both_objective_grad = multigrad(objective)
 
 
     def print_perf(nn_params, nn2_params, iter):
@@ -503,17 +504,16 @@ if __name__ == '__main__':
         if iter % 5 != 0:
             return None
 
-        train_loss = main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size,
-                                    seed)
-        test_loss = main_objective(nn_params, nn2_params, INP_test, OBS_test, OBS2_train, DEL_LENS_test, len(INP_test),
-                                   seed)
+        train_loss = main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size)
+        test_loss = main_objective(nn_params, nn2_params, INP_test, OBS_test, OBS2_train, DEL_LENS_test, len(INP_test))
 
-        tr1_rsq, tr2_rsq = rsq(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size,
-                               seed)
-        te1_rsq, te2_rsq = rsq(nn_params, nn2_params, INP_test, OBS_test, OBS2_test, DEL_LENS_test, len(INP_test), seed)
 
-        out_line = ' %s  | %.3f\t| %.3f\t| %.3f\t| %.3f\t| %.3f\t| %.3f\t|' % (
-            iter, train_loss, np.mean(tr1_rsq), np.mean(tr2_rsq), test_loss, np.mean(te1_rsq), np.mean(te2_rsq))
+        # TODO RSQ broken, should be fixed
+        # tr1_rsq, tr2_rsq = rsq(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size,
+        #                        seed)
+        # te1_rsq, te2_rsq = rsq(nn_params, nn2_params, INP_test, OBS_test, OBS2_test, DEL_LENS_test, len(INP_test))
+
+        out_line = f"Iteration: {iter}, Train Loss: {train_loss}, Test loss: {test_loss}."
         print_and_log(out_line, log_fn)
 
         if iter % 20 == 0:
