@@ -7,4 +7,4 @@ RUNS_SET = set(TABLE['Run'])
 def sam_fn(srr_id):
   # ex: /cluster/mshen/data/SRP076796/SRR3696/SRR3696622.sam
   prefix = srr_id[:7]
-  return '/cluster/mshen/data/SRP076796/%s/%s.sam' % (prefix, srr_id)
+  return './cluster/mshen/data/SRP076796/%s/%s.sam' % (prefix, srr_id)

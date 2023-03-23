@@ -2,7 +2,7 @@
 from __future__ import division
 import _config
 import sys, os, fnmatch, datetime, subprocess, imp
-sys.path.append('/cluster/mshen/')
+sys.path.append('./cluster/mshen/')
 import numpy as np
 from collections import defaultdict
 from mylib import util

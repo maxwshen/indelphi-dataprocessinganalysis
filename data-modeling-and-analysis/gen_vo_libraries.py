@@ -3,7 +3,7 @@ from collections import defaultdict
 
 libraries = defaultdict(lambda: defaultdict(list))
 
-curr_dir = '/cluster/mshen/prj/mmej_figures/data/'
+curr_dir = './cluster/mshen/prj/mmej_figures/data/'
 
 df = pd.read_csv(curr_dir + 'overbeek_data.csv')
 mmc2 = pd.read_csv(curr_dir + 'mmc2.txt')

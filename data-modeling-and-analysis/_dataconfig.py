@@ -1,10 +1,10 @@
 import pandas as pd
 from collections import defaultdict
-curr_dir = '/cluster/mshen/prj/mmej_figures/data/'
+curr_dir = './cluster/mshen/prj/mmej_figures/data/'
 
 VO_T = pd.read_csv(curr_dir + 'overbeek_data.csv')
 
-VO_DIR = '/cluster/mshen/prj/vanoverbeek/out/e10_control_adjustment/'
+VO_DIR = './cluster/mshen/prj/vanoverbeek/out/e10_control_adjustment/'
 
 LIB_EXPS = defaultdict(dict)
 with open(curr_dir + 'library_exps.txt') as f:

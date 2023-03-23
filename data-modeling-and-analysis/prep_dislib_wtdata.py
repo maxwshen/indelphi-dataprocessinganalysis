@@ -4,7 +4,7 @@ from mylib import util
 from mylib import compbio
 
 
-data_dir = '/cluster/mshen/prj/mmej_figures/data/'
+data_dir = './cluster/mshen/prj/mmej_figures/data/'
 
 targets = open(data_dir + 'targets_dislib.txt').readlines() 
 names = open(data_dir + 'names_dislib.txt').readlines()

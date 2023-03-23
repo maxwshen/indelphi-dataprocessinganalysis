@@ -451,7 +451,7 @@ if __name__ == '__main__':
         mh_lens.append(group[1]['homologyLength'].values)
         gc_fracs.append(group[1]['homologyGCContent'].values)
         del_lens.append(group[1]['Size'].values)
-        exps.append(group[1]['Type'].values)
+        exps.append(group[1]['key_0'].values)
         freqs.append(group[1]['countEvents'].values)
         dl_freqs.append(group[1]['fraction'].values)
 
@@ -501,7 +501,7 @@ if __name__ == '__main__':
 
     def print_perf(nn_params, nn2_params, iter):
         print_and_log(str(iter), log_fn)
-        if iter % 5 != 0:
+        if iter % 1 != 0:
             return None
 
         train_loss = main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size)
@@ -516,7 +516,7 @@ if __name__ == '__main__':
         out_line = f"Iteration: {iter}, Train Loss: {train_loss}, Test loss: {test_loss}."
         print_and_log(out_line, log_fn)
 
-        if iter % 20 == 0:
+        if iter % 1 == 0:
             letters = alphabetize(int(iter / 10))
             print_and_log(" Iter | Train Loss\t| Train Rsq1\t| Train Rsq2\t| Test Loss\t| Test Rsq1\t| Test Rsq2",
                           log_fn)

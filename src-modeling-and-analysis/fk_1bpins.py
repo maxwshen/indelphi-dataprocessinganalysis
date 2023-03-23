@@ -1,5 +1,5 @@
 from __future__ import division
-import _config, _lib, _data
+import _config, _lib#, _data
 import sys, os, datetime, subprocess, math, pickle, imp, fnmatch
 sys.path.append('/cluster/mshen/')
 import numpy as np
@@ -114,16 +114,16 @@ def prepare_statistics(data_nm):
 # Load statistics from csv, or calculate 
 ##
 def load_statistics(data_nm):
-  print data_nm
+  print(data_nm)
   stats_csv_fn = out_dir + '%s.csv' % (data_nm)
   if not os.path.isfile(stats_csv_fn) or redo:
-    print 'Running statistics from scratch...'
+    print('Running statistics from scratch...')
     stats_csv = prepare_statistics(data_nm)
     stats_csv.to_csv(stats_csv_fn)
   else:
-    print 'Getting statistics from file...'
+    print('Getting statistics from file...')
     stats_csv = pd.read_csv(stats_csv_fn, index_col = 0)
-  print 'Done'
+  print('Done')
   return stats_csv
 
 ##
@@ -140,7 +140,7 @@ def plot():
 ##
 def gen_qsubs():
   # Generate qsub shell scripts and commands for easy parallelization
-  print 'Generating qsub scripts...'
+  print('Generating qsub scripts...')
   qsubs_dir = _config.QSUBS_DIR + NAME + '/'
   util.ensure_dir_exists(qsubs_dir)
   qsub_commands = []
@@ -163,7 +163,7 @@ def gen_qsubs():
   with open(qsubs_dir + '_commands.txt', 'w') as f:
     f.write('\n'.join(qsub_commands))
 
-  print 'Wrote %s shell scripts to %s' % (num_scripts, qsubs_dir)
+  print('Wrote %s shell scripts to %s', (num_scripts, qsubs_dir))
   return
 
 
@@ -172,7 +172,7 @@ def gen_qsubs():
 ##
 @util.time_dec
 def main(data_nm = '', redo_flag = ''):
-  print NAME
+  print(NAME)
   global out_dir
   util.ensure_dir_exists(out_dir)
 

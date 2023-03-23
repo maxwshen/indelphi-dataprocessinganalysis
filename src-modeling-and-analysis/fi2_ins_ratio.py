@@ -1,5 +1,5 @@
 from __future__ import division
-import _config, _lib, _data, _predict2
+import _config, _lib, _data#, _predict2
 import sys, os, datetime, subprocess, math, pickle, imp, fnmatch
 sys.path.append('/cluster/mshen/')
 import numpy as np
@@ -141,16 +141,16 @@ def prepare_statistics(data_nm):
 # Load statistics from csv, or calculate 
 ##
 def load_statistics(data_nm):
-  print data_nm
+  print(data_nm)
   stats_csv_fn = out_dir + '%s.csv' % (data_nm)
   if not os.path.isfile(stats_csv_fn) or redo:
-    print 'Running statistics from scratch...'
+    print('Running statistics from scratch...')
     stats_csv = prepare_statistics(data_nm)
     stats_csv.to_csv(stats_csv_fn)
   else:
-    print 'Getting statistics from file...'
+    print('Getting statistics from file...')
     stats_csv = pd.read_csv(stats_csv_fn, index_col = 0)
-  print 'Done'
+  print('Done')
   return stats_csv
 
 ##
@@ -167,7 +167,7 @@ def plot():
 ##
 def gen_nohups():
   # Generate qsub shell scripts and commands for easy parallelization
-  print 'Generating nohup scripts...'
+  print('Generating nohup scripts...')
   qsubs_dir = _config.QSUBS_DIR + NAME + '/'
   util.ensure_dir_exists(qsubs_dir)
   nh_commands = []
@@ -190,7 +190,7 @@ def gen_nohups():
 ##
 @util.time_dec
 def main(data_nm = '', redo_flag = ''):
-  print NAME
+  print(NAME)
   global out_dir
   util.ensure_dir_exists(out_dir)
 

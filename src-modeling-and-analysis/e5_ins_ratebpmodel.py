@@ -1,5 +1,5 @@
 from __future__ import division
-import _config, _lib, _data, _predict, _predict2
+import _config, _lib, _predict #_data,  #, _predict2
 import sys, os, datetime, subprocess, math, pickle, imp, fnmatch
 import random
 sys.path.append('/cluster/mshen/')
@@ -32,10 +32,10 @@ def featurize(rate_stats, Y_nm):
 
     ent = np.array(rate_stats['Entropy']).reshape(len(rate_stats['Entropy']), 1)
     del_scores = np.array(rate_stats['Del Score']).reshape(len(rate_stats['Del Score']), 1)
-    print ent.shape, fivebases.shape, del_scores.shape
+    print(ent.shape, fivebases.shape, del_scores.shape)
 
     Y = np.array(rate_stats[Y_nm])
-    print Y_nm
+    print(Y_nm)
     
     Normalizer = [(np.mean(fivebases.T[2]),
                       np.std(fivebases.T[2])),
@@ -63,7 +63,7 @@ def featurize(rate_stats, Y_nm):
     X = np.concatenate(( gtag, ent, del_scores), axis = 1)
     X = np.concatenate(( gtag, ent, del_scores), axis = 1)
     feature_names = ['5G', '5T', '3A', '3G', 'Entropy', 'DelScore']
-    print 'Num. samples: %s, num. features: %s' % X.shape
+    print('Num. samples: %s, num. features: %s' % X.shape)
 
     return X, Y, Normalizer
 
@@ -104,13 +104,43 @@ def generate_models(X, Y, bp_stats, Normalizer):
 ##
 @util.time_dec
 def main(data_nm = ''):
-  print NAME
+  print(NAME)
+  out_place = './cluster/mshen/prj/mmej_figures/out/d2_model/'
+
   global out_dir
+  out_dir = "." + out_dir
   util.ensure_dir_exists(out_dir)
 
-  import fi2_ins_ratio
-  import fk_1bpins
+  # import fi2_ins_ratio
+  # import fk_1bpins
 
+  # ========
+  master_data = pickle.load(open("../pickle-data/inDelphi_counts_and_deletion_features.pkl", "rb"))
+
+
+  res = master_data['counts']
+  res['key_0'] = res.index
+  # res = pd.merge(master_data['counts'], master_data['del_features'], left_on=master_data['counts'].index, right_on=master_data['del_features'].index)
+  res[['sample', 'offset']] = pd.DataFrame(res['key_0'].tolist(), index=res.index)
+  res = res[res['Type'] == 'INSERTION']
+
+  mh_lens = []
+  gc_fracs = []
+  del_lens = []
+  exps = []
+  freqs = []
+  dl_freqs = []
+  for group in res.groupby("sample"):
+      # mh_lens.append(group[1]['homologyLength'].values)
+      # gc_fracs.append(group[1]['homologyGCContent'].values)
+      # del_lens.append(group[1]['Size'].values)
+      exps.append(group[1]['key_0'].values)
+      freqs.append(group[1]['countEvents'].values)
+      dl_freqs.append(group[1]['fraction'].values)
+
+
+
+  # ========
   exps = ['VO-spacers-HEK293-48h-controladj', 
           'VO-spacers-K562-48h-controladj',
           'DisLib-mES-controladj',
@@ -148,7 +178,7 @@ def main(data_nm = ''):
       all_rate_stats = all_rate_stats.append(rate_stats, ignore_index = True)
       all_bp_stats = all_bp_stats.append(bp_stats, ignore_index = True)
 
-    print exp, len(all_rate_stats)
+    print(exp, len(all_rate_stats))
 
   X, Y, Normalizer = featurize(all_rate_stats, 'Ins1bp/Del Ratio')
   generate_models(X, Y, all_bp_stats, Normalizer)
