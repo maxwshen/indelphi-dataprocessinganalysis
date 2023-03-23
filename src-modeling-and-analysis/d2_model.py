@@ -439,7 +439,8 @@ if __name__ == '__main__':
   Unpack data from e11_dataset
   '''
 
-    res = pd.merge(master_data['counts'], master_data['del_features'], left_on=master_data['counts'].index, right_on=master_data['del_features'].index)
+    res = pd.merge(master_data['counts'], master_data['del_features'], left_on=master_data['counts'].index,
+                   right_on=master_data['del_features'].index)
     res[['sample', 'offset']] = pd.DataFrame(res['key_0'].tolist(), index=res.index)
     mh_lens = []
     gc_fracs = []
@@ -474,7 +475,7 @@ if __name__ == '__main__':
   Training parameters
   '''
     param_scale = 0.1
-    num_epochs = 7 * 200 + 1
+    num_epochs = 50
     step_size = 0.10
 
     init_nn_params = init_random_params(param_scale, nn_layer_sizes, rs=seed)
