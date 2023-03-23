@@ -50,7 +50,7 @@ def init_folders(out_place):
         pass
     print_and_log('out dir: ' + out_letters, log_fn)
 
-    return out_letters, out_dir_params, log_fn
+    return out_dir, out_letters, out_dir_params, log_fn
 
 def save_train_test_names(train_nms, test_nms, out_dir):
     with open(out_dir + 'train_exps.csv', 'w') as f:
@@ -116,15 +116,15 @@ def unpack_data(master_data):
 
     return mh_lens, gc_fracs, del_lens, exps, freqs, dl_freqs
 
-def create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, out_place, seed):
+def create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, out_dir, seed):
     ans = train_test_split(INP, OBS, OBS2, NAMES, DEL_LENS, test_size=0.15, random_state=seed)
     INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = ans
-    save_train_test_names(NAMES_train, NAMES_test, out_place)
+    save_train_test_names(NAMES_train, NAMES_test, out_dir)
     return INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test
 
 def init_training_param(nn_layer_sizes, nn2_layer_sizes, seed, INP_train):
     param_scale = 0.1
-    num_epochs = 50
+    num_epochs = 1
     step_size = 0.10
 
     init_nn_params = init_random_params(param_scale, nn_layer_sizes, rs=seed)
@@ -270,7 +270,7 @@ def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples)
 
 
 def create(data_url, out_place):
-    out_letters, out_dir_params, log_fn = init_folders(out_place)
+    out_dir, out_letters, out_dir_params, log_fn = init_folders(out_place)
     counter = 0
     seed = npr.RandomState(1)
 
@@ -289,7 +289,7 @@ def create(data_url, out_place):
     NAMES = np.array([str(s) for s in exps])
     DEL_LENS = np.array(del_lens, dtype=object)
 
-    INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, out_place, seed)
+    INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, out_dir, seed)
     param_scale, num_epochs, step_size, init_nn_params, init_nn2_params, batch_size, num_batches = init_training_param(nn_layer_sizes, nn2_layer_sizes, seed, INP_train)
 
     def batch_indices(iter):
