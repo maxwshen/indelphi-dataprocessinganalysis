@@ -3,7 +3,7 @@
 
 NAMES = ['GH', 'IJ']
 
-data_dir = '/cluster/mshen/prj/mmej_manda/data/2017-08-23/'
+data_dir = './cluster/mshen/prj/mmej_manda/data/2017-08-23/'
 
 GRNAS = open(data_dir + 'grna.txt').read().split()
 TARGETS = open(data_dir + 'targets.txt').read().split()

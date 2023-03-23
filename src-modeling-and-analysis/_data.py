@@ -46,7 +46,7 @@ def merge_l2_datasets_summation(l3_data):
       if key not in keys_superset:
         keys_superset.add(key)
 
-  print 'Merging %s level2 datasets with summation' % (len(l3_data))
+  print('Merging %s level2 datasets with summation' % (len(l3_data)))
   timer = util.Timer(total = len(keys_superset))
   for exp in keys_superset:
     dfs = []
@@ -124,7 +124,7 @@ def load_dataset(nm, exp_subset = None, exp_subset_col = None):
   elif nm in L3:
     return load_l3_dataset(nm, exp_subset = exp_subset, exp_subset_col = exp_subset_col)
   else:
-    print 'ERROR: Bad name %s' % (nm)
+    print('ERROR: Bad name %s' % (nm))
     return None
 
 ##
@@ -135,9 +135,9 @@ def load_l3_dataset(nm, exp_subset = None, exp_subset_col = None):
   # Combines the level 2 datasets in some fashion (e.g., summation)
   # Pickles for amortized processing
   if nm not in L3:
-    print 'ERROR: Bad L3 name %s' % (nm)
+    print('ERROR: Bad L3 name %s' % (nm))
     return None
-  print 'Loading L3 dataset: %s' % (nm)
+  print('Loading L3 dataset: %s' % (nm))
 
   # Load library -- should just be one for all of L3 set
   l2_dataset_nm = L3[nm][0]
@@ -151,30 +151,30 @@ def load_l3_dataset(nm, exp_subset = None, exp_subset_col = None):
   if exp_subset_col is not None:
     nm_col = exp_subset_col
   if nm_col not in list(library_df.columns):
-    print 'ERROR: Bad column name, %s' % (nm_col)
+    print('ERROR: Bad column name, %s' % (nm_col))
 
   # Determine subset of experiments to return. By default, use all
   exp_set = set(library_df[nm_col])
   if exp_subset is not None:
     if exp_subset not in exp_subset_dict:
-      print 'ERROR: Bad exp subset %s' % (exp_subset)
+      print('ERROR: Bad exp subset %s' % (exp_subset))
     exp_set = exp_subset_dict[exp_subset]
 
   # Try to load from pickle
   pickled_fn = _config.DATA_DIR + 'L3_Datasets/%s.pkl' % (nm)
   if os.path.isfile(pickled_fn):
-    print 'Loading dataset from pickle...'
+    print('Loading dataset from pickle...')
     l3_data = pickle.load(open(pickled_fn))
-    print 'Done'
+    print('Done')
   else:
-    print 'Loading dataset from scratch...'
+    print('Loading dataset from scratch...')
     l3_data = dict()
     for l2_dataset_nm in L3[nm]:
       data = load_l2_dataset(l2_dataset_nm, exp_subset = exp_subset, exp_subset_col = exp_subset_col)
       l3_data[l2_dataset_nm] = data
     l3_data = merge_l2_datasets_summation(l3_data)
     pickle.dump(l3_data, open(pickled_fn, 'w'))
-    print 'Done'
+    print('Done')
 
   # Iterate through library, using local name to load dataframes, and labeling it with nm_col -- only on the subset of data specified
   dataset = dict()
@@ -192,9 +192,9 @@ def load_l2_dataset(nm, exp_subset = None, exp_subset_col = None):
   # Loads a level 2 dataset by finding its associated library, and iteratively loading all single experiments in the library.
   # Stores the the level 2 dataset with pickle. 
   if nm not in set(D['Name']):
-    print 'ERROR: Bad name %s' % (nm)
+    # print('ERROR: Bad name %s' % (nm))
     return None
-  print 'Loading %s' % (nm)
+  print('Loading %s' % (nm))
 
   row = D[D['Name'] == nm]
   library_nm = row['Library'].iloc[0]
@@ -211,23 +211,23 @@ def load_l2_dataset(nm, exp_subset = None, exp_subset_col = None):
   if exp_subset_col is not None:
     nm_col = exp_subset_col
   if nm_col not in list(library_df.columns):
-    print 'ERROR: Bad column name, %s' % (nm_col)
+    print('ERROR: Bad column name', (nm_col))
 
   # Determine subset of experiments to return. By default, use all
   exp_set = set(library_df[nm_col])
   if exp_subset is not None:
     if exp_subset not in exp_subset_dict:
-      print 'ERROR: Bad exp subset %s' % (exp_subset)
+      print('ERROR: Bad exp subset %s',(exp_subset))
     exp_set = exp_subset_dict[exp_subset]
 
   # If pickled version of default dataset exists, load it. Otherwise, make it.
   pickled_fn = _config.DATA_DIR + 'L2_Datasets/%s' % (nm)
   if os.path.isfile(pickled_fn):
-    print 'Loading default dataset from pickle...'
+    print('Loading default dataset from pickle...')
     default_dataset = pickle.load(open(pickled_fn))
-    print 'Done'
+    print('Done')
   else:
-    print 'Loading default dataset from scratch...'
+    print('Loading default dataset from scratch...')
     default_dataset = dict()
     timer = util.Timer(total = len(library_df))
     for idx, row2 in library_df.iterrows():
@@ -235,7 +235,7 @@ def load_l2_dataset(nm, exp_subset = None, exp_subset_col = None):
       default_dataset[row2['Name']] = d
       timer.update()
     pickle.dump(default_dataset, open(pickled_fn, 'w'))
-    print 'Done'
+    print('Done')
 
 
   # Iterate through library, using local name to load dataframes, and labeling it with nm_col -- only on the subset of data specified
@@ -246,9 +246,9 @@ def load_l2_dataset(nm, exp_subset = None, exp_subset_col = None):
       d = default_dataset[default_nm]
       dataset[row2[nm_col]] = d
 
-  print 'Dataset size: %s' % (len(dataset))
+  print('Dataset size: %s' % (len(dataset)))
   if len(dataset) == 0:
-    print 'Ensure exp_subset is a list of strings'
+    print('Ensure exp_subset is a list of strings')
 
   return dataset
 

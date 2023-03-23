@@ -1,6 +1,6 @@
 import sys
 
-PRJ_DIR = '/cluster/mshen/prj/mmej_figures/'
+PRJ_DIR = './cluster/mshen/prj/mmej_figures/'
 SRC_DIR = PRJ_DIR + 'src/'
 
 # toy = True
