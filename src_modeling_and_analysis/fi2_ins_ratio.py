@@ -51,30 +51,27 @@ def calc_statistics(df, exp, alldf_dict):
     # Deletion positions
 
     # Denominator is ins
-    if sum(_lib.crispr_subset(df)['Count']) <= 1000:
+    if sum(_lib.crispr_subset(df)['countEvents']) <= 1000:
         return
-
-    editing_rate = sum(_lib.crispr_subset(df)['Count']) / sum(_lib.notnoise_subset(df)['Count'])
+    # Always 1
+    editing_rate = 1
     alldf_dict['Editing Rate'].append(editing_rate)
+    ins_criteria = (df['Type'] == 'ins') & (df['Length'] == 1)
+    ins_count = sum(df[ins_criteria]['countEvents'])
 
-    ins_criteria = (df['Category'] == 'ins') & (df['Length'] == 1) & (df['Indel with Mismatches'] != 'yes')
-    ins_count = sum(df[ins_criteria]['Count'])
-
-    del_criteria = (df['Category'] == 'del') & (df['Indel with Mismatches'] != 'yes')
-    del_count = sum(df[del_criteria]['Count'])
+    del_criteria = (df['Type'] == 'DELETION')
+    del_count = sum(df[del_criteria]['countEvents'])
     if del_count == 0:
         return
     alldf_dict['Ins1bp/Del Ratio'].append(ins_count / (del_count + ins_count))
-
-    mhdel_crit = (df['Category'] == 'del') & (df['Indel with Mismatches'] != 'yes') & (
-                df['Microhomology-Based'] == 'yes')
-    mhdel_count = sum(df[mhdel_crit]['Count'])
+    mhdel_crit = (df['Type'] == 'del') & (df['homologyLength'] > 0)
+    mhdel_count = sum(df[mhdel_crit]['countEvents'])
     try:
         alldf_dict['Ins1bp/MHDel Ratio'].append(ins_count / (mhdel_count + ins_count))
     except ZeroDivisionError:
         alldf_dict['Ins1bp/MHDel Ratio'].append(0)
 
-    ins_ratio = ins_count / sum(_lib.crispr_subset(df)['Count'])
+    ins_ratio = ins_count / sum(_lib.crispr_subset(df)['countEvents'])
     alldf_dict['Ins1bp Ratio'].append(ins_ratio)
 
     seq, cutsite = _lib.get_sequence_cutsite(df)
@@ -90,6 +87,7 @@ def calc_statistics(df, exp, alldf_dict):
     norm_entropy = entropy(dlpred) / np.log(len(dlpred))
     alldf_dict['Entropy'].append(norm_entropy)
 
+    # TODO Fix local sequence
     local_seq = seq[cutsite - 4: cutsite + 4]
     gc = (local_seq.count('C') + local_seq.count('G')) / len(local_seq)
     alldf_dict['GC'].append(gc)
@@ -134,8 +132,16 @@ def prepare_statistics(data_nm):
 
     timer = util.Timer(total=len(dataset))
     # for exp in dataset.keys()[:100]:
-    for exp in dataset.keys():
-        df = dataset[exp]
+    dataset = pd.merge(dataset['counts'], dataset['del_features'],
+                       left_on=dataset['counts'].index, right_on=dataset['del_features'].index,
+                       how="left")
+    dataset['Length'] = [int(x[1].split("+")[1]) if x[1].split("+")[1].isdigit() else len(x[1].split("+")[1]) for x in
+                         dataset["key_0"]]
+    dataset['cutSite'] = [int(x[1].split("+")[0]) for x in dataset["key_0"]]
+    dataset['exp'] = [x[0] for x in dataset["key_0"]]
+    exps = list(set(dataset['exp']))
+    for exp in exps:
+        df = dataset[dataset["exp"] == exp]
         calc_statistics(df, exp, alldf_dict)
         timer.update()
 

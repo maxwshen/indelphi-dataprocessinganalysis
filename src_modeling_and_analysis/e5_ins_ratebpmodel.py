@@ -1,7 +1,6 @@
 from __future__ import division
 import pickle
 import sys
-import _config
 import numpy as np
 from mylib import util
 import pandas as pd
@@ -115,7 +114,9 @@ def main(data_nm=''):
 
     res = master_data['counts']
     res['key_0'] = res.index
-    # res = pd.merge(master_data['counts'], master_data['del_features'], left_on=master_data['counts'].index, right_on=master_data['del_features'].index)
+    # del_features = master_data['del_features']
+    # res = pd.merge(master_data['counts'], master_data['del_features'],
+    #                left_on=master_data['counts'].index, right_on=master_data['del_features'].index)
     res[['sample', 'offset']] = pd.DataFrame(res['key_0'].tolist(), index=res.index)
     res = res[res['Type'] == 'INSERTION']
 

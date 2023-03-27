@@ -96,9 +96,6 @@ def featurize_cpf1(seq, cutsite, DELLEN_LIMIT=60):
 def predict_mhdel(seq, cutsite):
     # Simulates all microhomology-based deletions from sequence and cutsite.
     # Returns a dataframe of the predicted frequencies of all possible mh-based deletions.
-    if model is None:
-        print('ERROR: Model not initialized')
-        return None
 
     # Extract features from sequence, cutsite
     mh_len, gc_frac, gt_pos, del_len = featurize(seq, cutsite)
@@ -336,7 +333,7 @@ def total_deletion_score(seq, cutsite):
 ##
 # Init
 ##
-def init_model(run_iter='aax', param_iter='aag'):
+def init_model(run_iter='aey', param_iter='abo'):
     # run_iter = 'aav'
     # param_iter = 'aag'
     # run_iter = 'aaw'
