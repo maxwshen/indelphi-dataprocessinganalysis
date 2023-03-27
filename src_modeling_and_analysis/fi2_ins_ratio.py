@@ -56,7 +56,7 @@ def calc_statistics(df, exp, alldf_dict):
     # Always 1
     editing_rate = 1
     alldf_dict['Editing Rate'].append(editing_rate)
-    ins_criteria = (df['Type'] == 'ins') & (df['Length'] == 1)
+    ins_criteria = (df['Type'] == 'INSERTION') & (df['Length'] == 1)
     ins_count = sum(df[ins_criteria]['countEvents'])
 
     del_criteria = (df['Type'] == 'DELETION')
@@ -88,6 +88,8 @@ def calc_statistics(df, exp, alldf_dict):
     alldf_dict['Entropy'].append(norm_entropy)
 
     # TODO Fix local sequence
+    cutsite = 12
+    # TODO: fix this, just for testing purpose
     local_seq = seq[cutsite - 4: cutsite + 4]
     gc = (local_seq.count('C') + local_seq.count('G')) / len(local_seq)
     alldf_dict['GC'].append(gc)
@@ -104,6 +106,7 @@ def calc_statistics(df, exp, alldf_dict):
 
     threebase = seq[cutsite]
     alldf_dict['Threebase'].append(threebase)
+    threebase_oh = None #TODO: sometimes it is not a nucleotide? Why?
     if threebase == 'A':
         threebase_oh = np.array([1, 0, 0, 0])
     if threebase == 'C':
@@ -154,8 +157,8 @@ def prepare_statistics(data_nm):
 # Load statistics from csv, or calculate 
 ##
 def load_statistics(data_nm):
-    print(data_nm)
-    stats_csv_fn = out_dir + '%s.csv' % data_nm
+    out_dir = "./cluster/mshen/prj/mmej_figures/out/"
+    stats_csv_fn = out_dir + 'stats.csv'
     if not os.path.isfile(stats_csv_fn) or redo:
         print('Running statistics from scratch...')
         stats_csv = prepare_statistics(data_nm)

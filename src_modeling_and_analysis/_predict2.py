@@ -333,7 +333,7 @@ def total_deletion_score(seq, cutsite):
 ##
 # Init
 ##
-def init_model(run_iter='aey', param_iter='abo'):
+def init_model(run_iter='aab', param_iter='aaa'):
     # run_iter = 'aav'
     # param_iter = 'aag'
     # run_iter = 'aaw'

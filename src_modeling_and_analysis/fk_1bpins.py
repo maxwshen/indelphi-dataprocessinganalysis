@@ -43,12 +43,13 @@ def calc_statistics(df, exp, alldf_dict):
 
   # Denominator is crispr activity
   df = _lib.crispr_subset(df)
-  if sum(df['Count']) <= 500:
+  total_count = sum(df['countEvents'])
+  if total_count <= 500:
     return
   df['Frequency'] = _lib.normalize_frequency(df)
 
-  criteria = (df['Category'] == 'ins') & (df['Length'] == 1)
-  if sum(df[criteria]['Count']) <= 100:
+  criteria = (df['Type'] == 'INSERTION') & (df['Length'] == 1)
+  if sum(df[criteria]['countEvents']) <= 100:
     return
   freq = sum(df[criteria]['Frequency'])
   alldf_dict['Frequency'].append(freq)
@@ -94,14 +95,22 @@ def prepare_statistics(data_nm):
 
   alldf_dict = defaultdict(list)
 
-  dataset = _data.load_dataset(data_nm)
+  dataset = pickle.load(open("../pickle_data/inDelphi_counts_and_deletion_features.pkl", "rb"))
   if dataset is None:
     return
 
-  timer = util.Timer(total = len(dataset))
+  timer = util.Timer(total=len(dataset))
   # for exp in dataset.keys()[:100]:
-  for exp in dataset.keys():
-    df = dataset[exp]
+  dataset = pd.merge(dataset['counts'], dataset['del_features'],
+                     left_on=dataset['counts'].index, right_on=dataset['del_features'].index,
+                     how="left")
+  dataset['Length'] = [int(x[1].split("+")[1]) if x[1].split("+")[1].isdigit() else len(x[1].split("+")[1]) for x in
+                       dataset["key_0"]]
+  dataset['cutSite'] = [int(x[1].split("+")[0]) for x in dataset["key_0"]]
+  dataset['exp'] = [x[0] for x in dataset["key_0"]]
+  exps = list(set(dataset['exp']))
+  for exp in exps:
+    df = dataset[dataset["exp"] == exp]
     calc_statistics(df, exp, alldf_dict)
     timer.update()
 
