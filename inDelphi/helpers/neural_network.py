@@ -93,7 +93,7 @@ def init_nn():
 
 def get_data(data_url, log_fn):
     print_and_log("Loading data...", log_fn)
-    inp_dir = '../pickle-data/'
+    inp_dir = '../pickle_data/'
     return pickle.load(open(inp_dir + data_url, 'rb'))
 
 def unpack_data(master_data):

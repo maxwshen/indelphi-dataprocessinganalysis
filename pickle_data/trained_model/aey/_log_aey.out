@@ -1,0 +1,533 @@
+out dir: aey
+Loading data...
+0
+Iteration: 0, Train Loss: -1.8398067558209783, Test loss: -0.22991610793983855.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-22 19:35:41.000986 aey aaa
+1
+2
+3
+4
+5
+Iteration: 5, Train Loss: -2.181756319488484, Test loss: -0.27736753014806215.
+6
+7
+8
+9
+10
+Iteration: 10, Train Loss: -2.800855100925647, Test loss: -0.3554608474770615.
+11
+12
+13
+14
+15
+Iteration: 15, Train Loss: -4.02197029039538, Test loss: -0.4654385708748995.
+16
+17
+18
+19
+20
+Iteration: 20, Train Loss: -4.02344266861636, Test loss: -0.47508162804665544.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-22 20:26:40.286430 aey aac
+21
+22
+23
+24
+25
+Iteration: 25, Train Loss: -4.230893817061453, Test loss: -0.501603281350235.
+26
+27
+28
+29
+30
+Iteration: 30, Train Loss: -4.289421409004224, Test loss: -0.5031215255222241.
+31
+32
+33
+34
+35
+Iteration: 35, Train Loss: -4.383725350550996, Test loss: -0.521545371227744.
+36
+37
+38
+39
+40
+Iteration: 40, Train Loss: -4.390828220727604, Test loss: -0.5274867108159438.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-22 21:20:01.081895 aey aae
+41
+42
+43
+44
+45
+Iteration: 45, Train Loss: -4.43721309318415, Test loss: -0.5306412376367189.
+46
+47
+48
+49
+50
+Iteration: 50, Train Loss: -4.438964816613331, Test loss: -0.5282474358672224.
+51
+52
+53
+54
+55
+Iteration: 55, Train Loss: -4.455820056982332, Test loss: -0.5322450575857983.
+56
+57
+58
+59
+60
+Iteration: 60, Train Loss: -4.464580076175706, Test loss: -0.5338536041851975.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-22 22:11:50.511108 aey aag
+61
+62
+63
+64
+65
+Iteration: 65, Train Loss: -4.468861420462718, Test loss: -0.5339223856250127.
+66
+67
+68
+69
+70
+Iteration: 70, Train Loss: -4.476469838112511, Test loss: -0.534466560842742.
+71
+72
+73
+74
+75
+Iteration: 75, Train Loss: -4.483717772597702, Test loss: -0.5335710036879516.
+76
+77
+78
+79
+80
+Iteration: 80, Train Loss: -4.488731564301775, Test loss: -0.534445889906981.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-22 23:00:08.200212 aey aai
+81
+82
+83
+84
+85
+Iteration: 85, Train Loss: -4.491933693062382, Test loss: -0.5351469608552007.
+86
+87
+88
+89
+90
+Iteration: 90, Train Loss: -4.493976699347123, Test loss: -0.535236019743465.
+91
+92
+93
+94
+95
+Iteration: 95, Train Loss: -4.4957571123722, Test loss: -0.5352892659680072.
+96
+97
+98
+99
+100
+Iteration: 100, Train Loss: -4.497350216640484, Test loss: -0.5352660827106718.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-22 23:49:48.601434 aey aak
+101
+102
+103
+104
+105
+Iteration: 105, Train Loss: -4.498522528722903, Test loss: -0.5350847763393293.
+106
+107
+108
+109
+110
+Iteration: 110, Train Loss: -4.499471805228828, Test loss: -0.535014695459975.
+111
+112
+113
+114
+115
+Iteration: 115, Train Loss: -4.500325766061598, Test loss: -0.5348745246091401.
+116
+117
+118
+119
+120
+Iteration: 120, Train Loss: -4.501001047414461, Test loss: -0.5347520096175908.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 00:35:34.892395 aey aam
+121
+122
+123
+124
+125
+Iteration: 125, Train Loss: -4.501566365873911, Test loss: -0.5346112901993995.
+126
+127
+128
+129
+130
+Iteration: 130, Train Loss: -4.502033979730922, Test loss: -0.5344623646378395.
+131
+132
+133
+134
+135
+Iteration: 135, Train Loss: -4.502432767017641, Test loss: -0.5343938565634021.
+136
+137
+138
+139
+140
+Iteration: 140, Train Loss: -4.50278369060652, Test loss: -0.5343727986827544.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 01:20:13.536720 aey aao
+141
+142
+143
+144
+145
+Iteration: 145, Train Loss: -4.503095724516664, Test loss: -0.5343367566429856.
+146
+147
+148
+149
+150
+Iteration: 150, Train Loss: -4.503382457549332, Test loss: -0.5342935903846427.
+151
+152
+153
+154
+155
+Iteration: 155, Train Loss: -4.503650342291422, Test loss: -0.5342357140356607.
+156
+157
+158
+159
+160
+Iteration: 160, Train Loss: -4.50390639384261, Test loss: -0.5341962906814308.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 02:04:47.416283 aey aaq
+161
+162
+163
+164
+165
+Iteration: 165, Train Loss: -4.504157943029915, Test loss: -0.5341612215829035.
+166
+167
+168
+169
+170
+Iteration: 170, Train Loss: -4.504407593870701, Test loss: -0.5341252108517511.
+171
+172
+173
+174
+175
+Iteration: 175, Train Loss: -4.504658436956869, Test loss: -0.5341031217042717.
+176
+177
+178
+179
+180
+Iteration: 180, Train Loss: -4.504909551029936, Test loss: -0.5340537854914158.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 02:49:28.898616 aey aas
+181
+182
+183
+184
+185
+Iteration: 185, Train Loss: -4.505075193963682, Test loss: -0.5340974527813291.
+186
+187
+188
+189
+190
+Iteration: 190, Train Loss: -4.499114154487497, Test loss: -0.5327816054309218.
+191
+192
+193
+194
+195
+Iteration: 195, Train Loss: -4.503414387102683, Test loss: -0.533306482316848.
+196
+197
+198
+199
+200
+Iteration: 200, Train Loss: -4.5017631883376446, Test loss: -0.5330138884974666.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 03:33:54.032816 aey aau
+201
+202
+203
+204
+205
+Iteration: 205, Train Loss: -4.505690719223666, Test loss: -0.5338250316398182.
+206
+207
+208
+209
+210
+Iteration: 210, Train Loss: -4.50556560403708, Test loss: -0.5341434145122029.
+211
+212
+213
+214
+215
+Iteration: 215, Train Loss: -4.506108150626745, Test loss: -0.5341673365552879.
+216
+217
+218
+219
+220
+Iteration: 220, Train Loss: -4.506716639315332, Test loss: -0.5339853188695495.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 04:18:28.733349 aey aaw
+221
+222
+223
+224
+225
+Iteration: 225, Train Loss: -4.506747145078635, Test loss: -0.5339511305019555.
+226
+227
+228
+229
+230
+Iteration: 230, Train Loss: -4.507208631474498, Test loss: -0.534081219004815.
+231
+232
+233
+234
+235
+Iteration: 235, Train Loss: -4.507509359122796, Test loss: -0.5341927085925805.
+236
+237
+238
+239
+240
+Iteration: 240, Train Loss: -4.507716131909819, Test loss: -0.5342518231551386.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 05:02:51.098898 aey aay
+241
+242
+243
+244
+245
+Iteration: 245, Train Loss: -4.507929326840173, Test loss: -0.5342849002825883.
+246
+247
+248
+249
+250
+Iteration: 250, Train Loss: -4.508146212973056, Test loss: -0.5342923082815969.
+251
+252
+253
+254
+255
+Iteration: 255, Train Loss: -4.50835695168234, Test loss: -0.5342896025886615.
+256
+257
+258
+259
+260
+Iteration: 260, Train Loss: -4.508554690883022, Test loss: -0.5342832177078302.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 05:47:17.387617 aey aba
+261
+262
+263
+264
+265
+Iteration: 265, Train Loss: -4.508736660219148, Test loss: -0.5342781458769381.
+266
+267
+268
+269
+270
+Iteration: 270, Train Loss: -4.5089214672954645, Test loss: -0.534296082020644.
+271
+272
+273
+274
+275
+Iteration: 275, Train Loss: -4.50910036737676, Test loss: -0.5343443108941086.
+276
+277
+278
+279
+280
+Iteration: 280, Train Loss: -4.509273885607248, Test loss: -0.534356464367625.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 06:31:45.549381 aey abc
+281
+282
+283
+284
+285
+Iteration: 285, Train Loss: -4.509437065079483, Test loss: -0.5343493546165848.
+286
+287
+288
+289
+290
+Iteration: 290, Train Loss: -4.509581180963857, Test loss: -0.5344277862928871.
+291
+292
+293
+294
+295
+Iteration: 295, Train Loss: -4.509492561488594, Test loss: -0.5342261745534417.
+296
+297
+298
+299
+300
+Iteration: 300, Train Loss: -4.50531996135066, Test loss: -0.5344998703619728.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 07:16:10.916385 aey abe
+301
+302
+303
+304
+305
+Iteration: 305, Train Loss: -4.509242815971501, Test loss: -0.5339959786500165.
+306
+307
+308
+309
+310
+Iteration: 310, Train Loss: -4.509676411389704, Test loss: -0.5342239484401714.
+311
+312
+313
+314
+315
+Iteration: 315, Train Loss: -4.510259777199956, Test loss: -0.5344699104231008.
+316
+317
+318
+319
+320
+Iteration: 320, Train Loss: -4.510121408803772, Test loss: -0.534561533928796.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 08:00:41.876210 aey abg
+321
+322
+323
+324
+325
+Iteration: 325, Train Loss: -4.509977642788427, Test loss: -0.5346479285800508.
+326
+327
+328
+329
+330
+Iteration: 330, Train Loss: -4.510224623031358, Test loss: -0.5346783601614119.
+331
+332
+333
+334
+335
+Iteration: 335, Train Loss: -4.510566685687784, Test loss: -0.5346710849146731.
+336
+337
+338
+339
+340
+Iteration: 340, Train Loss: -4.510806802460226, Test loss: -0.5346424643309604.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 08:45:01.230430 aey abi
+341
+342
+343
+344
+345
+Iteration: 345, Train Loss: -4.510966629253696, Test loss: -0.5346391721636333.
+346
+347
+348
+349
+350
+Iteration: 350, Train Loss: -4.511091329850789, Test loss: -0.5346490580082403.
+351
+352
+353
+354
+355
+Iteration: 355, Train Loss: -4.511201936943553, Test loss: -0.5346572383583814.
+356
+357
+358
+359
+360
+Iteration: 360, Train Loss: -4.511307328628737, Test loss: -0.5346910194681387.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 09:31:47.010575 aey abk
+361
+362
+363
+364
+365
+Iteration: 365, Train Loss: -4.511415407047635, Test loss: -0.5347104064222209.
+366
+367
+368
+369
+370
+Iteration: 370, Train Loss: -4.511532428511137, Test loss: -0.5347117575374851.
+371
+372
+373
+374
+375
+Iteration: 375, Train Loss: -4.5116408791479605, Test loss: -0.534706373812632.
+376
+377
+378
+379
+380
+Iteration: 380, Train Loss: -4.51173800189124, Test loss: -0.5347113672350996.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 10:18:07.393338 aey abm
+381
+382
+383
+384
+385
+Iteration: 385, Train Loss: -4.511842620899071, Test loss: -0.5347624182684532.
+386
+387
+388
+389
+390
+Iteration: 390, Train Loss: -4.511940073604883, Test loss: -0.5347880088369841.
+391
+392
+393
+394
+395
+Iteration: 395, Train Loss: -4.512032344741472, Test loss: -0.5347737391103792.
+396
+397
+398
+399
+400
+Iteration: 400, Train Loss: -4.51210484943291, Test loss: -0.5348664246671391.
+ Iter | Train Loss	| Train Rsq1	| Train Rsq2	| Test Loss	| Test Rsq1	| Test Rsq2
+2023-03-23 11:16:52.226759 aey abo
+401
+402
+403
+404
+405
+Iteration: 405, Train Loss: -4.511900113740341, Test loss: -0.5346221075136831.
+406
