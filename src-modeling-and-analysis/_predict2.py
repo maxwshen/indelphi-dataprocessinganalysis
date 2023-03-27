@@ -1,7 +1,7 @@
 from __future__ import division
 
 import copy
-import imp
+import d2_model
 import pickle
 from collections import defaultdict
 
@@ -110,7 +110,7 @@ def predict_mhdel(seq, cutsite):
     ##
     # MH-based deletion frequencies
     ##
-    mh_scores = model.nn_match_score_function(nn_params, pred_input)
+    mh_scores = d2_model.nn_match_score_function(nn_params, pred_input)
     mh_scores = mh_scores.reshape(mh_scores.shape[0], 1)
     Js = del_lens.reshape(del_lens.shape[0], 1)
     unnormalized_fq = np.exp(mh_scores - 0.25 * Js)
@@ -122,7 +122,7 @@ def predict_mhdel(seq, cutsite):
     for jdx in range(len(mh_vector)):
         if del_lens[jdx] == mh_vector[jdx]:
             dl = del_lens[jdx]
-            mhless_score = model.nn_match_score_function(nn2_params, np.array(dl))
+            mhless_score = d2_model.nn_match_score_function(nn2_params, np.array(dl))
             mhless_score = np.exp(mhless_score - 0.25 * dl)
             mask = np.concatenate([np.zeros(jdx, ), np.ones(1, ) * mhless_score, np.zeros(len(mh_vector) - jdx - 1, )])
             mhfull_contribution = mhfull_contribution + mask
@@ -158,7 +158,7 @@ def predict_indels(seq, cutsite, rate_model, bp_model):
     del_lens = np.array(del_len).T
 
     # Predict
-    mh_scores = model.nn_match_score_function(nn_params, pred_input)
+    mh_scores = d2_model.nn_match_score_function(nn_params, pred_input)
     mh_scores = mh_scores.reshape(mh_scores.shape[0], 1)
     Js = del_lens.reshape(del_lens.shape[0], 1)
     unfq = np.exp(mh_scores - 0.25 * Js)
@@ -169,7 +169,7 @@ def predict_indels(seq, cutsite, rate_model, bp_model):
     for jdx in range(len(mh_vector)):
         if del_lens[jdx] == mh_vector[jdx]:
             dl = del_lens[jdx]
-            mhless_score = model.nn_match_score_function(nn2_params, np.array(dl))
+            mhless_score = d2_model.nn_match_score_function(nn2_params, np.array(dl))
             mhless_score = np.exp(mhless_score - 0.25 * dl)
             mask = np.concatenate([np.zeros(jdx, ), np.ones(1, ) * mhless_score, np.zeros(len(mh_vector) - jdx - 1, )])
             mhfull_contribution = mhfull_contribution + mask
@@ -204,7 +204,7 @@ def predict_indels(seq, cutsite, rate_model, bp_model):
 
     mh_vector = np.array(mh_len)
     for dl in nonfull_dls:
-        mhless_score = model.nn_match_score_function(nn2_params, np.array(dl))
+        mhless_score = d2_model.nn_match_score_function(nn2_params, np.array(dl))
         mhless_score = np.exp(mhless_score - 0.25 * dl)
 
         unfq.append(mhless_score)
@@ -268,7 +268,7 @@ def predict_mhdel_cpf1(seq, cutsite):
     ##
     # MH-based deletion frequencies
     ##
-    mh_scores = model.nn_match_score_function(nn_params, pred_input)
+    mh_scores = d2_model.nn_match_score_function(nn_params, pred_input)
     mh_scores = mh_scores.reshape(mh_scores.shape[0], 1)
     Js = del_lens.reshape(del_lens.shape[0], 1)
     unnormalized_fq = np.exp(mh_scores - 0.15 * (Js - 4))
@@ -293,14 +293,14 @@ def deletion_length_distribution(seq, cutsite):
     del_lens = np.array(del_len).T
 
     # Predict
-    mh_scores = model.nn_match_score_function(nn_params, pred_input)
+    mh_scores = d2_model.nn_match_score_function(nn_params, pred_input)
     mh_scores = mh_scores.reshape(mh_scores.shape[0], 1)
     Js = del_lens.reshape(del_lens.shape[0], 1)
     unfq = np.exp(mh_scores - 0.25 * Js)
 
     dls = np.arange(1, 28 + 1)
     dls = dls.reshape(28, 1)
-    nn2_scores = model.nn_match_score_function(nn2_params, dls)
+    nn2_scores = d2_model.nn_match_score_function(nn2_params, dls)
     unfq2 = np.exp(nn2_scores - 0.25 * np.arange(1, 28 + 1))
 
     for ufq, dl in zip(unfq, Js):
@@ -320,14 +320,14 @@ def total_deletion_score(seq, cutsite):
     del_lens = np.array(del_len).T
 
     # Predict
-    mh_scores = model.nn_match_score_function(nn_params, pred_input)
+    mh_scores = d2_model.nn_match_score_function(nn_params, pred_input)
     mh_scores = mh_scores.reshape(mh_scores.shape[0], 1)
     Js = del_lens.reshape(del_lens.shape[0], 1)
     unfq = np.exp(mh_scores - 0.25 * Js)
 
     dls = np.arange(1, 28 + 1)
     dls = dls.reshape(28, 1)
-    nn2_scores = model.nn_match_score_function(nn2_params, dls)
+    nn2_scores = d2_model.nn_match_score_function(nn2_params, dls)
     unfq2 = np.exp(nn2_scores - 0.25 * np.arange(1, 28 + 1))
 
     return float(sum(unfq) + sum(unfq2))
@@ -358,8 +358,6 @@ def init_model(run_iter='aax', param_iter='aag'):
     global nn2_params
     nn_params = pickle.load(open(param_fold + '%s_nn.pkl' % param_iter))
     nn2_params = pickle.load(open(param_fold + '%s_nn2.pkl' % param_iter))
-
-    model = imp.load_source('model', model_out_dir + '%s/d2_model.py' % run_iter)
 
     # test_df = pd.read_csv(model_out_dir + '%s/%s_test_rsqs_params.csv' % (run_iter, param_iter))
     # global test_exps
