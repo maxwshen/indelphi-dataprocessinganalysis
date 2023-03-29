@@ -2,6 +2,7 @@ from __future__ import division
 
 import os
 import pickle
+import re
 import sys
 
 import _config
@@ -46,7 +47,7 @@ exps = ['Lib1-mES-controladj',
 ##
 # Run statistics
 ##
-def calc_statistics(df, exp, alldf_dict):
+def calc_statistics(df, exp, alldf_dict, seq):
     # Calculate statistics on df, saving to alldf_dict
     # Deletion positions
 
@@ -74,7 +75,8 @@ def calc_statistics(df, exp, alldf_dict):
     ins_ratio = ins_count / sum(_lib.crispr_subset(df)['countEvents'])
     alldf_dict['Ins1bp Ratio'].append(ins_ratio)
 
-    seq, cutsite = _lib.get_sequence_cutsite(df)
+    # SEQ REPLACED BY FILTERED INPUT
+    subseq, cutsite = _lib.get_sequence_cutsite(df)
     fivebase = seq[cutsite - 1]
     alldf_dict['Fivebase'].append(fivebase)
 
@@ -87,9 +89,6 @@ def calc_statistics(df, exp, alldf_dict):
     norm_entropy = entropy(dlpred) / np.log(len(dlpred))
     alldf_dict['Entropy'].append(norm_entropy)
 
-    # TODO Fix local sequence
-    cutsite = 12
-    # TODO: fix this, just for testing purpose
     local_seq = seq[cutsite - 4: cutsite + 4]
     gc = (local_seq.count('C') + local_seq.count('G')) / len(local_seq)
     alldf_dict['GC'].append(gc)
@@ -106,7 +105,7 @@ def calc_statistics(df, exp, alldf_dict):
 
     threebase = seq[cutsite]
     alldf_dict['Threebase'].append(threebase)
-    threebase_oh = None #TODO: sometimes it is not a nucleotide? Why?
+    threebase_oh = None  # TODO: sometimes it is not a nucleotide? Why?
     if threebase == 'A':
         threebase_oh = np.array([1, 0, 0, 0])
     if threebase == 'C':
@@ -140,14 +139,28 @@ def prepare_statistics(data_nm):
                        how="left")
     dataset['Length'] = [int(x[1].split("+")[1]) if x[1].split("+")[1].isdigit() else len(x[1].split("+")[1]) for x in
                          dataset["key_0"]]
-    dataset['cutSite'] = [int(x[1].split("+")[0]) for x in dataset["key_0"]]
+    dataset['cutSite'] = [int(x[1].split("+")[0]) + 29 for x in dataset["key_0"]]
     dataset['exp'] = [x[0] for x in dataset["key_0"]]
     exps = list(set(dataset['exp']))
+
+    # TODO ignores cutsites not compatible with liba, is this correct?
+    dataset = dataset[dataset['cutSite'] > 4]
+    with open("../data_libprocessing/targets-libA.txt") as f:
+        full_dna_exps = []
+        for line in f:
+            full_dna_exps.append(line.strip("\n"))
     for i, exp in enumerate(exps):
         if i % 300 == 0:
             print(f"Calculation experiment {i}...")
         df = dataset[dataset["exp"] == exp]
-        calc_statistics(df, exp, alldf_dict)
+        exp_substring_dna = exp[-20:]
+        matched_dna = list(filter(lambda x: exp_substring_dna in x, full_dna_exps))
+        if matched_dna:
+            seq = matched_dna[0]
+            calc_statistics(df, exp, alldf_dict, seq)
+        else:
+            print(f"Experiment {exp} not in libA!")
+
         timer.update()
 
     # Return a dataframe where columns are positions and rows are experiment names, values are frequencies
@@ -166,9 +179,9 @@ def load_statistics(data_nm):
         stats_csv = prepare_statistics(data_nm)
         stats_csv.to_csv(stats_csv_fn)
     else:
-        print('Getting statistics from file...')
+        # print('Getting statistics from file...')
         stats_csv = pd.read_csv(stats_csv_fn, index_col=0)
-    print('Done')
+    # print('Done')
     return stats_csv
 
 

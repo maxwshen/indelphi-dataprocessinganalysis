@@ -67,7 +67,7 @@ def generate_models(X, Y, bp_stats, Normalizer):
     # Train rate model
     model = KNeighborsRegressor()
     model.fit(X, Y)
-    with open(out_dir + 'rate_model_v2.pkl', 'w') as f:
+    with open(out_dir + 'rate_model_v2.pkl', 'wb') as f:
         pickle.dump(model, f)
 
     # Obtain bp stats
@@ -87,10 +87,10 @@ def generate_models(X, Y, bp_stats, Normalizer):
         for bp, freq in zip(list('ACGT'), mean_vals):
             bp_model[base][bp] = freq / sum(mean_vals)
 
-    with open(out_dir + 'bp_model_v2.pkl', 'w') as f:
+    with open(out_dir + 'bp_model_v2.pkl', 'wb') as f:
         pickle.dump(bp_model, f)
 
-    with open(out_dir + 'Normalizer_v2.pkl', 'w') as f:
+    with open(out_dir + 'Normalizer_v2.pkl', 'wb') as f:
         pickle.dump(Normalizer, f)
 
     return
@@ -101,7 +101,7 @@ def generate_models(X, Y, bp_stats, Normalizer):
 ##
 @util.time_dec
 def main(data_nm=''):
-    print(NAME)
+    # print(NAME)
     # out_place = './cluster/mshen/prj/mmej_figures/out/d2_model/'
     import fi2_ins_ratio
     import fk_1bpins
@@ -151,34 +151,34 @@ def main(data_nm=''):
         rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
         bp_stats = fk_1bpins.load_statistics(exp)
         # exps = rate_stats['_Experiment']
-
-        # TODO: remove this? We don't use those experiments it seems like
+        #
+        #
         if 'DisLib' in exp:
             crit = (rate_stats['_Experiment'] >= 73) & (rate_stats['_Experiment'] <= 300)
             rs = rate_stats[crit]
-            all_rate_stats = all_rate_stats.append(rs, ignore_index=True)
+            all_rate_stats.append(rs, ignore_index=True)
 
             crit = (rate_stats['_Experiment'] >= 16) & (rate_stats['_Experiment'] <= 72)
             rs = rate_stats[crit]
             rs = rs[rs['Ins1bp Ratio'] < 0.3]  # remove outliers
-            all_rate_stats = all_rate_stats.append(rs, ignore_index=True)
+            all_rate_stats.append(rs, ignore_index=True)
 
             crit = (bp_stats['_Experiment'] >= 73) & (bp_stats['_Experiment'] <= 300)
             rs = bp_stats[crit]
-            all_bp_stats = all_bp_stats.append(rs, ignore_index=True)
+            all_bp_stats.append(rs, ignore_index=True)
 
             crit = (bp_stats['_Experiment'] >= 16) & (bp_stats['_Experiment'] <= 72)
             rs = bp_stats[crit]
-            all_bp_stats = all_bp_stats.append(rs, ignore_index=True)
+            all_bp_stats.append(rs, ignore_index=True)
 
-        elif 'VO' in exp or 'Lib1' in exp:
-            all_rate_stats = all_rate_stats.append(rate_stats, ignore_index=True)
-            all_bp_stats = all_bp_stats.append(bp_stats, ignore_index=True)
+        # elif 'VO' in exp or 'Lib1' in exp:
+        all_rate_stats = pd.concat([all_rate_stats, rate_stats], ignore_index=True)
+        all_bp_stats = pd.concat([all_bp_stats, bp_stats], ignore_index=True)
 
         print(exp, len(all_rate_stats))
 
     # TODO: check if this makes sense
-    all_rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
+    # all_rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
     X, Y, Normalizer = featurize(all_rate_stats, 'Ins1bp/Del Ratio')
     generate_models(X, Y, all_bp_stats, Normalizer)
 

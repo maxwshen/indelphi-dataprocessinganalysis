@@ -1,18 +1,20 @@
 from __future__ import division
-import _config, _lib  # , _data
-import sys, os, datetime, subprocess, math, pickle, imp, fnmatch
+
+import os
+import pickle
+import sys
+
+import _config  # , _data
+import _lib
 
 sys.path.append('/cluster/mshen/')
-import numpy as np
 from collections import defaultdict
 from mylib import util
 import pandas as pd
 import matplotlib
+import re
 
 matplotlib.use('Pdf')
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-import seaborn as sns
 
 # Default params
 DEFAULT_INP_DIR = None
@@ -40,7 +42,7 @@ exps = ['Lib1-mES-controladj',
 ##
 # Run statistics
 ##
-def calc_statistics(df, exp, alldf_dict):
+def calc_statistics(df, exp, alldf_dict, seq):
     # Calculate statistics on df, saving to alldf_dict
     # Deletion positions
 
@@ -84,8 +86,8 @@ def calc_statistics(df, exp, alldf_dict):
     except:
         t_frac = 0
     alldf_dict['T frac'].append(t_frac)
-
-    seq, cutsite = _lib.get_sequence_cutsite(df)
+    # seq IS REPLACED BY NEW INPUT!
+    subseq, cutsite = _lib.get_sequence_cutsite(df)
     fivebase = seq[cutsite - 1]
     alldf_dict['Base'].append(fivebase)
 
@@ -112,12 +114,27 @@ def prepare_statistics(data_nm):
                        how="left")
     dataset['Length'] = [int(x[1].split("+")[1]) if x[1].split("+")[1].isdigit() else len(x[1].split("+")[1]) for x in
                          dataset["key_0"]]
-    dataset['cutSite'] = [int(x[1].split("+")[0]) for x in dataset["key_0"]]
+    dataset['cutSite'] = [int(x[1].split("+")[0]) + 29 for x in dataset["key_0"]]
     dataset['exp'] = [x[0] for x in dataset["key_0"]]
     exps = list(set(dataset['exp']))
-    for exp in exps:
+
+    # TODO ignores cutsites not compatible with liba, is this correct?
+    dataset = dataset[dataset["cutSite"] > 4]
+    with open("../data_libprocessing/targets-libA.txt") as f:
+        full_dna_exps = []
+        for line in f:
+            full_dna_exps.append(line.strip("\n"))
+    for i, exp in enumerate(exps):
+        if i % 500 == 0:
+            print(f"Prepare statistics for experiment {i}/{len(exps)}...")
         df = dataset[dataset["exp"] == exp]
-        calc_statistics(df, exp, alldf_dict)
+        exp_substring_dna = exp[-20:]
+        matched_dna = list(filter(lambda x: exp_substring_dna in x, full_dna_exps))
+        if matched_dna:
+            seq = matched_dna[0]
+            calc_statistics(df, exp, alldf_dict, seq)
+        else:
+            print(f"Experiment {exp} not in libA!")
         timer.update()
 
     # Return a dataframe where columns are positions and rows are experiment names, values are frequencies
