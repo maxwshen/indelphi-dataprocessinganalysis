@@ -17,7 +17,7 @@ out_dir = "./cluster"
 # Functions
 ##
 def convert_oh_string_to_nparray(input):
-    input = input.replace('[', '').replace(']', '')
+    input = str(input).replace('[', '').replace(']', '')
     nums = input.split(' ')
     return np.array([int(s) for s in nums])
 
@@ -130,17 +130,20 @@ def main(data_nm=''):
         # mh_lens.append(group[1]['homologyLength'].values)
         # gc_fracs.append(group[1]['homologyGCContent'].values)
         # del_lens.append(group[1]['Size'].values)
-        exps.append(group[1]['key_0'].values)
+        exps.append(group[1]['key_0'].values[0][0])
         freqs.append(group[1]['countEvents'].values)
         dl_freqs.append(group[1]['fraction'].values)
 
+    #TODO: I think the author hardcoded this and we don't want to do that?
+
     # ========
-    exps = ['VO-spacers-HEK293-48h-controladj',
-            'VO-spacers-K562-48h-controladj',
-            'DisLib-mES-controladj',
-            'DisLib-U2OS-controladj',
-            'Lib1-mES-controladj'
-            ]
+    # exps = ['VO-spacers-HEK293-48h-controladj',
+    #         'VO-spacers-K562-48h-controladj',
+    #         'DisLib-mES-controladj',
+    #         'DisLib-U2OS-controladj',
+    #         'Lib1-mES-controladj'
+    #         ]
+
 
     all_rate_stats = pd.DataFrame()
     all_bp_stats = pd.DataFrame()
@@ -150,6 +153,7 @@ def main(data_nm=''):
         bp_stats = fk_1bpins.load_statistics(exp)
         # exps = rate_stats['_Experiment']
 
+        #TODO: remove this? We don't use those experiments it seems like
         if 'DisLib' in exp:
             crit = (rate_stats['_Experiment'] >= 73) & (rate_stats['_Experiment'] <= 300)
             rs = rate_stats[crit]
@@ -174,6 +178,8 @@ def main(data_nm=''):
 
         print(exp, len(all_rate_stats))
 
+    #TODO: check if this makes sense
+    all_rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
     X, Y, Normalizer = featurize(all_rate_stats, 'Ins1bp/Del Ratio')
     generate_models(X, Y, all_bp_stats, Normalizer)
 

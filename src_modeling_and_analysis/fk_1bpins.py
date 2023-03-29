@@ -54,28 +54,30 @@ def calc_statistics(df, exp, alldf_dict):
   freq = sum(df[criteria]['Frequency'])
   alldf_dict['Frequency'].append(freq)
 
+  df['insertion_sequence'] = [seq[1].split("+")[1] for seq in df['key_0']]
+
   s = df[criteria]
 
   try:
-    a_frac = sum(s[s['Inserted Bases'] == 'A']['Frequency']) / freq
+    a_frac = sum(s[s['insertion_sequence'] == 'A']['Frequency']) / freq
   except TypeError:
     a_frac = 0
   alldf_dict['A frac'].append(a_frac)
 
   try:
-    c_frac = sum(s[s['Inserted Bases'] == 'C']['Frequency']) / freq
+    c_frac = sum(s[s['insertion_sequence'] == 'C']['Frequency']) / freq
   except:
     c_frac = 0
   alldf_dict['C frac'].append(c_frac)
 
   try:
-    g_frac = sum(s[s['Inserted Bases'] == 'G']['Frequency']) / freq
+    g_frac = sum(s[s['insertion_sequence'] == 'G']['Frequency']) / freq
   except:
     g_frac = 0
   alldf_dict['G frac'].append(g_frac)
 
   try:
-    t_frac = sum(s[s['Inserted Bases'] == 'T']['Frequency']) / freq
+    t_frac = sum(s[s['insertion_sequence'] == 'T']['Frequency']) / freq
   except:
     t_frac = 0
   alldf_dict['T frac'].append(t_frac)
@@ -124,7 +126,8 @@ def prepare_statistics(data_nm):
 ##
 def load_statistics(data_nm):
   print(data_nm)
-  stats_csv_fn = out_dir + '%s.csv' % (data_nm)
+  out_dir = "./cluster/mshen/prj/mmej_figures/out/"
+  stats_csv_fn = out_dir + '1bpins_stats.csv'
   if not os.path.isfile(stats_csv_fn) or redo:
     print('Running statistics from scratch...')
     stats_csv = prepare_statistics(data_nm)

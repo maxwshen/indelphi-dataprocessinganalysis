@@ -63,7 +63,7 @@ def get_sequence_cutsite(df):
 # Basic Calculations
 ##
 def normalize_frequency(df):
-    return df['Count'] / sum(df['Count'])
+    return df['countEvents'] / sum(df['countEvents'])
 
 
 def normalized_entropy(df):
