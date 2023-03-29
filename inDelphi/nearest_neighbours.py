@@ -24,6 +24,6 @@ def transform_data(master_data):
 
     return expectations, freqs, dl_freqs
 
-def train(master_data):
+def train(master_data: dict):
     exps, freqs, dl_freqs = transform_data(master_data)
     # ins_stats, bp_stats = get_statistics()
