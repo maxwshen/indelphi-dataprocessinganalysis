@@ -6,51 +6,7 @@ import autograd.numpy as np
 from sklearn.model_selection import train_test_split
 from autograd.differential_operators import multigrad_dict as multigrad
 from autograd.misc.flatten import flatten
-
-
-def count_num_folders(out_dir):
-    for fold in os.listdir(out_dir):
-        assert os.path.isdir(out_dir + fold), 'Not a folder!'
-    return len(os.listdir(out_dir))
-
-def alphabetize(num):
-    assert num < 26 ** 3, 'num bigger than 17576'
-    mapper = {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e', 5: 'f', 6: 'g', 7: 'h', 8: 'i', 9: 'j', 10: 'k', 11: 'l', 12: 'm',
-              13: 'n', 14: 'o', 15: 'p', 16: 'q', 17: 'r', 18: 's', 19: 't', 20: 'u', 21: 'v', 22: 'w', 23: 'x',
-              24: 'y', 25: 'z'}
-    hundreds = int(num / (26 * 26)) % 26
-    tens = int(num / 26) % 26
-    ones = num % 26
-    return ''.join([mapper[hundreds], mapper[tens], mapper[ones]])
-
-def copy_script(out_dir):
-    src_dir = '/cluster/mshen/prj/mmej_figures/src/'
-    script_nm = __file__
-    subprocess.call('cp ' + src_dir + script_nm + ' ' + out_dir, shell=True)
-    return
-
-def print_and_log(text, log_fn):
-    with open(log_fn, 'a') as f:
-        f.write(text + '\n')
-    print(text)
-    return
-
-def init_folders(out_place):
-    util.ensure_dir_exists(out_place)
-    num_folds = count_num_folders(out_place)
-    out_letters = alphabetize(num_folds + 1)
-    out_dir = out_place + out_letters + '/'
-    out_dir_params = out_place + out_letters + '/parameters/'
-    util.ensure_dir_exists(out_dir)
-    copy_script(out_dir)
-    util.ensure_dir_exists(out_dir_params)
-
-    log_fn = out_dir + '_log_%s.out' % (out_letters)
-    with open(log_fn, 'w') as f:
-        pass
-    print_and_log('out dir: ' + out_letters, log_fn)
-
-    return out_dir, out_letters, out_dir_params, log_fn
+from util import print_and_log, get_data, alphabetize, Filenames
 
 def save_train_test_names(train_nms, test_nms, out_dir):
     with open(out_dir + 'train_exps.csv', 'w') as f:
@@ -91,11 +47,6 @@ def init_nn():
 
     return nn_layer_sizes, nn2_layer_sizes
 
-def get_data(data_url, log_fn):
-    print_and_log("Loading data...", log_fn)
-    inp_dir = '../pickle_data/'
-    return pickle.load(open(inp_dir + data_url, 'rb'))
-
 def unpack_data(master_data):
     res = pd.merge(master_data['counts'], master_data['del_features'], left_on=master_data['counts'].index,
                    right_on=master_data['del_features'].index)
@@ -121,20 +72,6 @@ def create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, out_dir, seed):
     INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = ans
     save_train_test_names(NAMES_train, NAMES_test, out_dir)
     return INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test
-
-def init_training_param(nn_layer_sizes, nn2_layer_sizes, seed, INP_train):
-    param_scale = 0.1
-    num_epochs = 1
-    step_size = 0.10
-
-    init_nn_params = init_random_params(param_scale, nn_layer_sizes, rs=seed)
-    init_nn2_params = init_random_params(param_scale, nn2_layer_sizes, rs=seed)
-
-    batch_size = 200
-    num_batches = int(np.ceil(len(INP_train) / batch_size))
-
-    return param_scale, num_epochs, step_size, init_nn_params, init_nn2_params, batch_size, num_batches
-
 def nn_match_score_function(params, inputs):
     # """Params is a list of (weights, bias) tuples.
     #    inputs is an (N x D) matrix."""
@@ -268,14 +205,19 @@ def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples)
         # LOSS += np.sum((normalized_fq - obs[idx])**2)
     return LOSS / num_samples
 
+def init_training_param(nn_layer_sizes, nn2_layer_sizes, seed, INP_train, param_scale, batch_size):
+    init_nn_params = init_random_params(param_scale, nn_layer_sizes, rs=seed)
+    init_nn2_params = init_random_params(param_scale, nn2_layer_sizes, rs=seed)
 
-def create(data_url, out_place):
-    out_dir, out_letters, out_dir_params, log_fn = init_folders(out_place)
-    counter = 0
+    num_batches = int(np.ceil(len(INP_train) / batch_size))
+
+    return init_nn_params, init_nn2_params, num_batches
+
+def create(master_data: dict, filenames: Filenames,
+           num_epochs=10,param_scale = 0.1, step_size = 0.10, batch_size=200):
     seed = npr.RandomState(1)
 
     nn_layer_sizes, nn2_layer_sizes = init_nn()
-    master_data = get_data(data_url, log_fn)
     mh_lens, gc_fracs, del_lens, exps, freqs, dl_freqs = unpack_data(master_data)
 
     INP = []
@@ -289,12 +231,13 @@ def create(data_url, out_place):
     NAMES = np.array([str(s) for s in exps])
     DEL_LENS = np.array(del_lens, dtype=object)
 
-    INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, out_dir, seed)
-    param_scale, num_epochs, step_size, init_nn_params, init_nn2_params, batch_size, num_batches = init_training_param(nn_layer_sizes, nn2_layer_sizes, seed, INP_train)
-
-    def batch_indices(iter):
-        idx = iter % num_batches
-        return slice(idx * batch_size, (idx + 1) * batch_size)
+    INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, filenames.out_dir, seed)
+    init_nn_params, init_nn2_params, num_batches = init_training_param(nn_layer_sizes,
+                                                                       nn2_layer_sizes,
+                                                                       seed=seed,
+                                                                       INP_train=INP_train,
+                                                                       param_scale=param_scale,
+                                                                       batch_size=batch_size)
 
     def objective(nn_params, nn2_params):
         return main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size)
@@ -302,7 +245,7 @@ def create(data_url, out_place):
     both_objective_grad = multigrad(objective)
 
     def print_perf(nn_params, nn2_params, iter):
-        print_and_log(str(iter), log_fn)
+        print_and_log(str(iter), filenames.log_fn)
         if iter % 5 != 0:
             return None
 
@@ -315,14 +258,14 @@ def create(data_url, out_place):
         # te1_rsq, te2_rsq = rsq(nn_params, nn2_params, INP_test, OBS_test, OBS2_test, DEL_LENS_test, len(INP_test))
 
         out_line = f"Iteration: {iter}, Train Loss: {train_loss}, Test loss: {test_loss}."
-        print_and_log(out_line, log_fn)
+        print_and_log(out_line, filenames.log_fn)
 
         if iter % 20 == 0:
             letters = alphabetize(int(iter / 10))
             print_and_log(" Iter | Train Loss\t| Train Rsq1\t| Train Rsq2\t| Test Loss\t| Test Rsq1\t| Test Rsq2",
-                          log_fn)
-            print_and_log('%s %s %s' % (datetime.datetime.now(), out_letters, letters), log_fn)
-            save_parameters(nn_params, nn2_params, out_dir_params, letters)
+                          filenames.log_fn)
+            print_and_log('%s %s %s' % (datetime.datetime.now(), filenames.out_letters, letters), filenames.log_fn)
+            save_parameters(nn_params, nn2_params, filenames.out_dir_params, letters)
             # save_rsq_params_csv(NAMES_test, test_rsqs, nn2_params, out_dir, letters, 'test')
             if iter >= 10:
                 # if iter >= 0:
