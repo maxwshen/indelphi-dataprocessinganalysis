@@ -5,12 +5,13 @@ import numpy as np
 from mylib import util
 import pandas as pd
 from sklearn.neighbors import KNeighborsRegressor
+import re
 
 sys.path.append('/cluster/mshen/')
 # Default params
 DEFAULT_INP_DIR = '/cluster/mshen/prj/mmej_manda2/out/2017-10-27/mb_grab_exons/'
 NAME = util.get_fn(__file__)
-out_dir = "./cluster"
+out_dir = "/cluster/mshen/prj/mmej_figures/out/e5_ins_ratebpmodel/"
 
 
 ##
@@ -88,9 +89,11 @@ def generate_models(X, Y, bp_stats, Normalizer):
             bp_model[base][bp] = freq / sum(mean_vals)
 
     with open(out_dir + 'bp_model_v2.pkl', 'wb') as f:
+        print(f"saved bp model as {out_dir}bp_model_v2.pkl")
         pickle.dump(bp_model, f)
 
     with open(out_dir + 'Normalizer_v2.pkl', 'wb') as f:
+        print(f"saved normalizer as {out_dir}Normalizer_v2.pkl")
         pickle.dump(Normalizer, f)
 
     return
@@ -146,7 +149,10 @@ def main(data_nm=''):
 
     all_rate_stats = pd.DataFrame()
     all_bp_stats = pd.DataFrame()
-    for exp in exps:
+    # filter for testing purposes, use exps if you want the whole dataset
+    # (which is enormous and takes a long while to train)
+    filtered_exps = list(filter(lambda x: re.search("[a-z]", x), exps))
+    for exp in filtered_exps:
         rate_stats = fi2_ins_ratio.load_statistics(exp)
         rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
         bp_stats = fk_1bpins.load_statistics(exp)
@@ -171,7 +177,6 @@ def main(data_nm=''):
             rs = bp_stats[crit]
             all_bp_stats.append(rs, ignore_index=True)
 
-        # elif 'VO' in exp or 'Lib1' in exp:
         all_rate_stats = pd.concat([all_rate_stats, rate_stats], ignore_index=True)
         all_bp_stats = pd.concat([all_bp_stats, bp_stats], ignore_index=True)
 
