@@ -134,7 +134,7 @@ def main(data_nm=''):
         freqs.append(group[1]['countEvents'].values)
         dl_freqs.append(group[1]['fraction'].values)
 
-    #TODO: I think the author hardcoded this and we don't want to do that?
+    # TODO: I think the author hardcoded this and we don't want to do that?
 
     # ========
     # exps = ['VO-spacers-HEK293-48h-controladj',
@@ -144,7 +144,6 @@ def main(data_nm=''):
     #         'Lib1-mES-controladj'
     #         ]
 
-
     all_rate_stats = pd.DataFrame()
     all_bp_stats = pd.DataFrame()
     for exp in exps:
@@ -153,7 +152,7 @@ def main(data_nm=''):
         bp_stats = fk_1bpins.load_statistics(exp)
         # exps = rate_stats['_Experiment']
 
-        #TODO: remove this? We don't use those experiments it seems like
+        # TODO: remove this? We don't use those experiments it seems like
         if 'DisLib' in exp:
             crit = (rate_stats['_Experiment'] >= 73) & (rate_stats['_Experiment'] <= 300)
             rs = rate_stats[crit]
@@ -178,7 +177,7 @@ def main(data_nm=''):
 
         print(exp, len(all_rate_stats))
 
-    #TODO: check if this makes sense
+    # TODO: check if this makes sense
     all_rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
     X, Y, Normalizer = featurize(all_rate_stats, 'Ins1bp/Del Ratio')
     generate_models(X, Y, all_bp_stats, Normalizer)

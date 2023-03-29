@@ -346,7 +346,7 @@ def init_model(run_iter='aey', param_iter='abo'):
     if model is not None:
         return
 
-    print('Initializing model %s/%s...' % (run_iter, param_iter))
+    # print('Initializing model %s/%s...' % (run_iter, param_iter))
 
     model_out_dir = '/cluster/mshen/prj/mmej_figures/out/d2_model/'
 
@@ -360,5 +360,5 @@ def init_model(run_iter='aey', param_iter='abo'):
     # global test_exps
     # test_exps = [str(s) for s in list(test_df['Exp'])]
 
-    print('Done')
+    # print('Done')
     return

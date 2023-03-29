@@ -143,7 +143,9 @@ def prepare_statistics(data_nm):
     dataset['cutSite'] = [int(x[1].split("+")[0]) for x in dataset["key_0"]]
     dataset['exp'] = [x[0] for x in dataset["key_0"]]
     exps = list(set(dataset['exp']))
-    for exp in exps:
+    for i, exp in enumerate(exps):
+        if i % 300 == 0:
+            print(f"Calculation experiment {i}...")
         df = dataset[dataset["exp"] == exp]
         calc_statistics(df, exp, alldf_dict)
         timer.update()
