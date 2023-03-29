@@ -1,6 +1,6 @@
 import pandas as pd
 from collections import defaultdict
-
+from util import Filenames
 
 def prepare_statistics():
     bp_ins = defaultdict(list)
@@ -24,7 +24,7 @@ def transform_data(master_data):
 
     return expectations, freqs, dl_freqs
 
-def train(master_data: dict):
+def train(master_data: dict, filenames: Filenames):
     exps, freqs, dl_freqs = transform_data(master_data)
     ins_stats, bp_stats = get_statistics()
 
@@ -33,14 +33,17 @@ def train(master_data: dict):
             'DisLib-mES-controladj',
             'DisLib-U2OS-controladj',
             'Lib1-mES-controladj'
-            ]
+            ] # TODO: REMOVE
 
     all_rate_stats = pd.DataFrame()
     all_bp_stats = pd.DataFrame()
     for exp in exps:
-        # rate_stats = fi2_ins_ratio.load_statistics(exp)
+        # rate_stats = fi2_ins_ratio.load_statistics(exp) TODO
         rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
-        # bp_stats = fk_1bpins.load_statistics(exp)
+        # bp_stats = fk_1bpins.load_statistics(exp) TODO
+
+    X, Y, Normalizer = featurize(all_rate_stats, 'Ins1bp/Del Ratio')
+    generate_models(X, Y, all_bp_stats, Normalizer)
 
 
 # =======================================================
@@ -112,11 +115,11 @@ def featurize(rate_stats, Y_nm):
     return X, Y, Normalizer
 
 
-def generate_models(X, Y, bp_stats, Normalizer):
+def generate_models(X, Y, bp_stats, Normalizer, filenames: Filenames):
     # Train rate model
     model = KNeighborsRegressor()
     model.fit(X, Y)
-    with open(out_dir + 'rate_model_v2.pkl', 'w') as f:
+    with open(filenames.out_dir + 'rate_model_v2.pkl', 'w') as f:
         pickle.dump(model, f)
 
     # Obtain bp stats
@@ -136,10 +139,10 @@ def generate_models(X, Y, bp_stats, Normalizer):
         for bp, freq in zip(list('ACGT'), mean_vals):
             bp_model[base][bp] = freq / sum(mean_vals)
 
-    with open(out_dir + 'bp_model_v2.pkl', 'w') as f:
+    with open(filenames.out_dir + 'bp_model_v2.pkl', 'w') as f:
         pickle.dump(bp_model, f)
 
-    with open(out_dir + 'Normalizer_v2.pkl', 'w') as f:
+    with open(filenames.out_dir + 'Normalizer_v2.pkl', 'w') as f:
         pickle.dump(Normalizer, f)
 
     return
