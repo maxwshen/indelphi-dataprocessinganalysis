@@ -151,8 +151,8 @@ def main(data_nm=''):
     all_bp_stats = pd.DataFrame()
     # filter for testing purposes, use exps if you want the whole dataset
     # (which is enormous and takes a long while to train)
-    filtered_exps = list(filter(lambda x: re.search("[a-z]", x), exps))
-    for exp in filtered_exps:
+    # filtered_exps = list(filter(lambda x: re.search("[a-z]", x), exps))
+    for exp in exps:
         rate_stats = fi2_ins_ratio.load_statistics(exp)
         rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
         bp_stats = fk_1bpins.load_statistics(exp)
