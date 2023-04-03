@@ -1,10 +1,13 @@
 from __future__ import division
-import pickle, imp
+
 import copy
-import numpy as np
+import pickle
 from collections import defaultdict
+
+import numpy as np
 import pandas as pd
 from scipy.stats import entropy
+
 import d2_model as model
 
 # global vars
@@ -219,3 +222,63 @@ def init_model(run_iter='aey', param_iter='abo'):
 
     print('Done')
     return
+
+
+def init_rate_bp_models():
+    model_dir = '/cluster/mshen/prj/mmej_figures/out/e5_ins_ratebpmodel/'
+
+    rate_model_nm = 'rate_model_v2'
+    bp_model_nm = 'bp_model_v2'
+    normalizer_nm = 'Normalizer_v2'
+
+    print('Loading %s...\nLoading %s...' % (rate_model_nm, bp_model_nm))
+    with open("." + model_dir + '%s.pkl' % rate_model_nm, "rb") as f:
+        rate_model = pickle.load(f)
+    with open("." + model_dir + '%s.pkl' % bp_model_nm, "rb") as f:
+        bp_model = pickle.load(f)
+    with open("." + model_dir + '%s.pkl' % normalizer_nm, "rb") as f:
+        normalizer = pickle.load(f)
+    return rate_model, bp_model, normalizer
+
+
+if __name__ == "__main__":
+    init_model()
+    rate_model, bp_model, normalizer = init_rate_bp_models()
+    dataset = pickle.load(open("../pickle_data/inDelphi_counts_and_deletion_features.pkl", "rb"))
+    dataset = pd.merge(dataset['counts'], dataset['del_features'],
+                       left_on=dataset['counts'].index, right_on=dataset['del_features'].index,
+                       how="left")
+    dataset['Length'] = [int(x[1].split("+")[1]) if x[1].split("+")[1].isdigit() else len(x[1].split("+")[1]) for x in
+                         dataset["key_0"]]
+    dataset['cutSite'] = [int(x[1].split("+")[0]) + 29 for x in dataset["key_0"]]
+    dataset['exp'] = [x[0] for x in dataset["key_0"]]
+
+    # TODO ignores cutsites not compatible with liba, is this correct?
+    dataset = dataset[dataset['cutSite'] > 4]
+    with open("../data_libprocessing/targets-libA.txt") as f:
+        full_dna_exps = []
+        for line in f:
+            full_dna_exps.append(line.strip("\n"))
+
+    exps = list(set(dataset['exp']))
+
+
+    for i, exp in enumerate(exps):
+
+        header_data = list(dataset[dataset["exp"] == exp]["exp"])[0].split("_")[:-1]
+        header = ""
+        for h in header_data:
+            header = header + h + "_"
+
+        header.removesuffix("_")
+
+        exp_substring_dna = exp[-20:]
+        matched_dna = list(filter(lambda x: exp_substring_dna in x, full_dna_exps))
+        if matched_dna:
+            sequence = matched_dna[0]
+        else:
+            print(f"Experiment {exp} not in libA!")
+            continue
+        cutsites = dataset[dataset["exp"] == exp]["cutSite"]
+        for cutsite in cutsites:
+            dataframes = predict_all(sequence, cutsite, rate_model, bp_model, normalizer)
