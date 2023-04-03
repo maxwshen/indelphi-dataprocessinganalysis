@@ -50,11 +50,11 @@ def init_rate_bp_models():
     normalizer_nm = 'Normalizer_v2'
 
     print('Loading %s...\nLoading %s...' % (rate_model_nm, bp_model_nm))
-    with open(model_dir + '%s.pkl' % rate_model_nm) as f:
+    with open("." + model_dir + '%s.pkl' % rate_model_nm, "rb") as f:
         rate_model = pickle.load(f)
-    with open(model_dir + '%s.pkl' % bp_model_nm) as f:
+    with open("." + model_dir + '%s.pkl' % bp_model_nm, "rb") as f:
         bp_model = pickle.load(f)
-    with open(model_dir + '%s.pkl' % normalizer_nm) as f:
+    with open("." + model_dir + '%s.pkl' % normalizer_nm, "rb") as f:
         normalizer = pickle.load(f)
     return
 
@@ -108,7 +108,7 @@ def find_cutsites_and_predict(inp_fn, data_nm, split):
     # Calculate statistics on df, saving to alldf_dict
     # Deletion positions
 
-    _predict.init_model(run_iter='aax', param_iter='aag')
+    _predict.init_model(run_iter='aey', param_iter='abo')
     dd = defaultdict(list)
     dd_shuffled = defaultdict(list)
 
@@ -118,26 +118,55 @@ def find_cutsites_and_predict(inp_fn, data_nm, split):
         df_out_dir = intron_dfs_out_dir
 
     num_flushed = 0
-    timer = util.Timer(total=util.line_count(inp_fn))
-    with open(inp_fn) as f:
-        for i, line in enumerate(f):
-            if i % 2 == 0:
-                header = line.strip()
-            if i % 2 == 1:
-                sequence = line.strip()
+    # timer = util.Timer(total=util.line_count(inp_fn))
+    dataset = pickle.load(open("../pickle_data/inDelphi_counts_and_deletion_features.pkl", "rb"))
+    dataset = pd.merge(dataset['counts'], dataset['del_features'],
+                       left_on=dataset['counts'].index, right_on=dataset['del_features'].index,
+                       how="left")
+    dataset['Length'] = [int(x[1].split("+")[1]) if x[1].split("+")[1].isdigit() else len(x[1].split("+")[1]) for x in
+                         dataset["key_0"]]
+    dataset['cutSite'] = [int(x[1].split("+")[0]) + 29 for x in dataset["key_0"]]
+    dataset['exp'] = [x[0] for x in dataset["key_0"]]
 
-                if len(sequence) < 60:
-                    continue
-                if len(sequence) > 500000:
-                    continue
+    # TODO ignores cutsites not compatible with liba, is this correct?
+    dataset = dataset[dataset['cutSite'] > 4]
+    with open("../data_libprocessing/targets-libA.txt") as f:
+        full_dna_exps = []
+        for line in f:
+            full_dna_exps.append(line.strip("\n"))
 
-                bulk_predict(header, sequence, dd, dd_shuffled, df_out_dir)
-                dd, dd_shuffled, num_flushed = maybe_flush(dd, dd_shuffled, data_nm, split, num_flushed)
+    exps = list(set(dataset['exp']))
+    for i, exp in enumerate(exps):
 
-            if (i - 1) % 50 == 0 and i > 1:
-                print('%s pct, %s' % (i / 500, datetime.datetime.now()))
+        header_data = list(dataset[dataset["exp"] == exp]["exp"])[0].split("_")[:-1]
+        header = ""
+        for h in header_data:
+            header = header + h + "_"
 
-            timer.update()
+        header.removesuffix("_")
+
+        exp_substring_dna = exp[-20:]
+        matched_dna = list(filter(lambda x: exp_substring_dna in x, full_dna_exps))
+        if matched_dna:
+            sequence = matched_dna[0]
+        else:
+            print(f"Experiment {exp} not in libA!")
+            continue
+        # TODO which sequences are for the input?
+        # if len(sequence) < 60:
+        #     continue
+        # if len(sequence) > 500000:
+        #     continue
+
+        df_out_dir = "./cluster/mshen/prj/mmej_figures/out/g_genome_predict"
+
+        bulk_predict(header, sequence, dd, dd_shuffled, df_out_dir)
+        dd, dd_shuffled, num_flushed = maybe_flush(dd, dd_shuffled, data_nm, split, num_flushed)
+
+        if (i - 1) % 50 == 0 and i > 1:
+            print('%s pct, %s' % (i / 500, datetime.datetime.now()))
+
+        # timer.update()
 
     maybe_flush(dd, dd_shuffled, data_nm, split, num_flushed, force=True)
     return
@@ -339,9 +368,9 @@ def main(data_nm='', split=''):
     util.ensure_dir_exists(exon_dfs_out_dir)
     util.ensure_dir_exists(intron_dfs_out_dir)
 
-    if data_nm == '' and split == '':
-        gen_qsubs()
-        return
+    # if data_nm == '' and split == '':
+    #     gen_qsubs()
+    #     return
 
     inp_fn = DEFAULT_INP_DIR + '%s_%s.fa' % (data_nm, split)
     init_rate_bp_models()

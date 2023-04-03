@@ -36,7 +36,7 @@ def predict(inp_fn):
   df_buffer = init_df_buffer()
   df_buffer_nm = ''
 
-  timer = util.Timer(total = util.line_count(inp_fn))
+  # timer = util.Timer(total = util.line_count(inp_fn))
   with open(inp_fn) as f:
     for i, line in enumerate(f):
       if i % 2 == 0:
@@ -50,12 +50,12 @@ def predict(inp_fn):
           continue
         df_buffer = add_del_profiles(header, sequence, df_buffer)
 
-        print len(df_buffer)
+        # print len(df_buffer)
         if len(df_buffer) > 100000:
           flush_df_buffer(df_buffer, df_buffer_nm)
           df_buffer_nm = ''
           df_buffer = init_df_buffer()
-      timer.update()
+      # timer.update()
   return
 
 

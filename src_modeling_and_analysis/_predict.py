@@ -211,7 +211,7 @@ def init_model(run_iter='aey', param_iter='abo'):
 
     model_out_dir = '/cluster/mshen/prj/mmej_figures/out/d2_model/'
 
-    param_fold = model_out_dir + '%s/parameters/' % (run_iter)
+    param_fold = model_out_dir + '%s/parameters/' % run_iter
     global nn_params
     global nn2_params
     nn_params = pickle.load(open("./" + param_fold + '%s_nn.pkl' % param_iter, "rb"))
