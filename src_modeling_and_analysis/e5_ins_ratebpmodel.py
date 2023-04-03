@@ -180,7 +180,7 @@ def main(data_nm=''):
         all_rate_stats = pd.concat([all_rate_stats, rate_stats], ignore_index=True)
         all_bp_stats = pd.concat([all_bp_stats, bp_stats], ignore_index=True)
 
-        print(exp, len(all_rate_stats))
+        # print(exp, len(all_rate_stats))
 
     # TODO: check if this makes sense
     # all_rate_stats = rate_stats[rate_stats['Entropy'] > 0.01]
