@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from autograd.differential_operators import multigrad_dict as multigrad
 from autograd.misc.flatten import flatten
 from util import print_and_log, get_data, alphabetize, Filenames
+import tqdm
 
 def save_train_test_names(train_nms, test_nms, out_dir):
     with open(out_dir + 'train_exps.csv', 'w') as f:
@@ -23,7 +24,6 @@ def exponential_decay(step_size):
     if step_size > 0.001:
         step_size *= 0.999
     return step_size
-
 
 def relu(x):       return np.maximum(0, x)
 
@@ -128,19 +128,19 @@ def adam_minmin(grad_both, init_params_nn, init_params_nn2, callback=None, num_i
         x_nn2 = x_nn2 - step_size * mhat_nn2 / (np.sqrt(vhat_nn2) + eps)
     return unflatten_nn(x_nn), unflatten_nn2(x_nn2)
 
-def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples):
+def main_objective(nn_params, nn2_params, mh_NN_inp, obs_freqs, obs_frac, del_lens, num_samples):
     LOSS = 0
-    for idx in range(len(inp)):
+    for idx in tqdm.tqdm(range(len(mh_NN_inp)), desc="#GRNA's"):
 
         ##
         # MH-based deletion frequencies
         ##
-        mh_scores = nn_match_score_function(nn_params, inp[idx])
+        mh_scores = nn_match_score_function(nn_params, mh_NN_inp[idx])
         Js = np.array(del_lens[idx])
         unnormalized_fq = np.exp(mh_scores - 0.25 * Js)
 
         # Add MH-less contribution at full MH deletion lengths
-        mh_vector = inp[idx].T[0]
+        mh_vector = mh_NN_inp[idx].T[0]
         mhfull_contribution = np.zeros(mh_vector.shape)
         for jdx in range(len(mh_vector)):
             if del_lens[idx][jdx] == mh_vector[jdx]:
@@ -155,10 +155,10 @@ def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples)
 
         # Pearson correlation squared loss
         x_mean = np.mean(normalized_fq)
-        y_mean = np.mean(obs[idx])
-        pearson_numerator = np.sum((normalized_fq - x_mean) * (obs[idx] - y_mean))
+        y_mean = np.mean(obs_freqs[idx])
+        pearson_numerator = np.sum((normalized_fq - x_mean) * (obs_freqs[idx] - y_mean))
         pearson_denom_x = np.sqrt(np.sum((normalized_fq - x_mean) ** 2))
-        pearson_denom_y = np.sqrt(np.sum((obs[idx] - y_mean) ** 2))
+        pearson_denom_y = np.sqrt(np.sum((obs_freqs[idx] - y_mean) ** 2))
         pearson_denom = pearson_denom_x * pearson_denom_y
         rsq = (pearson_numerator / pearson_denom) ** 2
         neg_rsq = rsq * -1
@@ -192,10 +192,10 @@ def main_objective(nn_params, nn2_params, inp, obs, obs2, del_lens, num_samples)
 
         # Pearson correlation squared loss
         x_mean = np.mean(normalized_fq)
-        y_mean = np.mean(obs2[idx])
-        pearson_numerator = np.sum((normalized_fq - x_mean) * (obs2[idx][0:28] - y_mean))
+        y_mean = np.mean(obs_frac[idx])
+        pearson_numerator = np.sum((normalized_fq - x_mean) * (obs_frac[idx][0:28] - y_mean))
         pearson_denom_x = np.sqrt(np.sum((normalized_fq - x_mean) ** 2))
-        pearson_denom_y = np.sqrt(np.sum((obs2[idx] - y_mean) ** 2))
+        pearson_denom_y = np.sqrt(np.sum((obs_frac[idx] - y_mean) ** 2))
         pearson_denom = pearson_denom_x * pearson_denom_y
         rsq = (pearson_numerator / pearson_denom) ** 2
         neg_rsq = rsq * -1
@@ -213,11 +213,12 @@ def init_training_param(nn_layer_sizes, nn2_layer_sizes, seed, INP_train, param_
 
     return init_nn_params, init_nn2_params, num_batches
 
-def create(master_data: dict, filenames: Filenames,
-           num_epochs=10,param_scale = 0.1, step_size = 0.10, batch_size=200):
-    seed = npr.RandomState(1)
-
+def init_model(seed, INP_train, param_scale, batch_size):
     nn_layer_sizes, nn2_layer_sizes = init_nn()
+    return init_training_param(nn_layer_sizes,nn2_layer_sizes, seed=seed,
+                               INP_train=INP_train,param_scale=param_scale,batch_size=batch_size)
+
+def init_test_set(master_data, filenames, seed):
     mh_lens, gc_fracs, del_lens, exps, freqs, dl_freqs = unpack_data(master_data)
 
     INP = []
@@ -226,31 +227,35 @@ def create(master_data: dict, filenames: Filenames,
         INP.append(inp_point)
     INP = np.array(INP, dtype=object)  # 2000 * N * 2
 
-    OBS = np.array(freqs, dtype=object)
-    OBS2 = np.array(dl_freqs, dtype=object)
+    OBS_FREQS = np.array(freqs, dtype=object)
+    OBS_FRAC = np.array(dl_freqs, dtype=object)
     NAMES = np.array([str(s) for s in exps])
     DEL_LENS = np.array(del_lens, dtype=object)
+    return create_test_set(INP, OBS_FREQS, OBS_FRAC, NAMES, DEL_LENS, filenames.out_dir, seed)
 
-    INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, filenames.out_dir, seed)
-    init_nn_params, init_nn2_params, num_batches = init_training_param(nn_layer_sizes,
-                                                                       nn2_layer_sizes,
-                                                                       seed=seed,
-                                                                       INP_train=INP_train,
-                                                                       param_scale=param_scale,
-                                                                       batch_size=batch_size)
+def train_and_create(master_data: dict, filenames: Filenames,
+                     num_epochs=10, param_scale = 0.1, step_size = 0.10, batch_size=200):
+    """
+    Trains and creates the MH-NN and MH-less NN
+    """
+    seed = npr.RandomState(1)
+
+    INP_train, INP_test, OBS_FREQS_train, OBS_FREQS_test, OBS_FRAC_train, OBS_FRAC_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = init_test_set(master_data, filenames, seed)
+    init_nn_params, init_nn2_params, num_batches = init_model(seed, INP_train, param_scale, batch_size)
 
     def objective(nn_params, nn2_params):
-        return main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size)
+        return main_objective(nn_params, nn2_params, INP_train, OBS_FREQS_train, OBS_FRAC_train, DEL_LENS_train, batch_size)
 
     both_objective_grad = multigrad(objective)
 
     def print_perf(nn_params, nn2_params, iter):
+        print("= finished iteration")
         print_and_log(str(iter), filenames.log_fn)
         if iter % 5 != 0:
             return None
 
-        train_loss = main_objective(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size)
-        test_loss = main_objective(nn_params, nn2_params, INP_test, OBS_test, OBS2_train, DEL_LENS_test, len(INP_test))
+        train_loss = main_objective(nn_params, nn2_params, INP_train, OBS_FREQS_train, OBS_FRAC_train, DEL_LENS_train, batch_size)
+        test_loss = main_objective(nn_params, nn2_params, INP_test, OBS_FREQS_test, OBS_FRAC_train, DEL_LENS_test, len(INP_test))
 
         # TODO RSQ broken, should be fixed
         # tr1_rsq, tr2_rsq = rsq(nn_params, nn2_params, INP_train, OBS_train, OBS2_train, DEL_LENS_train, batch_size,
