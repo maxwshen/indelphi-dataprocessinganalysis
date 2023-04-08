@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from autograd.differential_operators import multigrad_dict as multigrad
 from autograd.misc.flatten import flatten
 from util import print_and_log, get_data, alphabetize, Filenames
+from helpers.nn_logic import *
 import tqdm
 
 def save_train_test_names(train_nms, test_nms, out_dir):
@@ -19,19 +20,6 @@ def save_train_test_names(train_nms, test_nms, out_dir):
         for i in range(len(test_nms)):
             f.write(','.join([test_nms[i]]) + '\n')
     return
-
-def exponential_decay(step_size):
-    if step_size > 0.001:
-        step_size *= 0.999
-    return step_size
-
-def relu(x):       return np.maximum(0, x)
-
-def sigmoid(x):    return 0.5 * (np.tanh(x) + 1.0)
-
-def logsigmoid(x): return x - np.logaddexp(0, x)
-
-def leaky_relu(x): return np.maximum(0, x) + np.minimum(0, x) * 0.001
 
 
 def init_random_params(scale, layer_sizes, rs=npr.RandomState(0)):
@@ -72,22 +60,6 @@ def create_test_set(INP, OBS, OBS2, NAMES, DEL_LENS, out_dir, seed):
     INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test = ans
     save_train_test_names(NAMES_train, NAMES_test, out_dir)
     return INP_train, INP_test, OBS_train, OBS_test, OBS2_train, OBS2_test, NAMES_train, NAMES_test, DEL_LENS_train, DEL_LENS_test
-def nn_match_score_function(params, inputs):
-    # """Params is a list of (weights, bias) tuples.
-    #    inputs is an (N x D) matrix."""
-    inpW, inpb = params[0]
-    # inputs = swish(np.dot(inputs, inpW) + inpb)
-    inputs = sigmoid(np.dot(inputs, inpW) + inpb)
-    # inputs = leaky_relu(np.dot(inputs, inpW) + inpb)
-    for W, b in params[1:-1]:
-        outputs = np.dot(inputs, W) + b
-        # inputs = swish(outputs)
-        inputs = sigmoid(outputs)
-        # inputs = logsigmoid(outputs)
-        # inputs = leaky_relu(outputs)
-    outW, outb = params[-1]
-    outputs = np.dot(inputs, outW) + outb
-    return outputs.flatten()
 
 def save_parameters(nn_params, nn2_params, out_dir_params, letters):
     pickle.dump(nn_params, open(out_dir_params + letters + '_nn.pkl', 'wb'))
