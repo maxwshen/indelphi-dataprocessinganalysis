@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import pandas as pd
 
+
 # Used for testing with dummy data
 def dummy_scatterplot():
     # Dummy dataset size
@@ -134,6 +135,7 @@ def dummy_scatterplot():
     plt.title("Frequency of inserted base for different -4 position bases")
     plt.show()
 
+
 # Helper function for dummy plot
 def bin_data_per_min4(datapoints, x_min, x_max, colors):
     current_bin = [[], [], [], []]
@@ -149,6 +151,25 @@ def bin_data_per_min4(datapoints, x_min, x_max, colors):
                 current_bin[3].append(datapoints[1][i])
 
     return current_bin
+
+
+# Helper function for confidence intervals
+def plot_confidence_interval(x, values, z=1.96, color='k', notch_size=2, line_width=1.5):
+    mean = np.mean(values)
+    stdev = np.std(values)
+    confidence_interval = z * stdev / np.sqrt(len(values))
+
+    left = x - notch_size / 2
+    top = mean - confidence_interval
+    right = x + notch_size / 2
+    bottom = mean + confidence_interval
+    plt.plot([x, x], [top, bottom], color=color, linewidth=line_width)
+    plt.plot([left, right], [top, top], color=color, linewidth=line_width)
+    plt.plot([left, right], [bottom, bottom], color=color, linewidth=line_width)
+    plt.plot(x, mean, "_", markersize=15, color='k')
+
+    return mean, confidence_interval
+
 
 # Finalized function for recreating Figure 2a using the same data as the paper
 def recreate_fig_2a(min4_base, a_frac, t_frac, c_frac, g_frac):
@@ -173,7 +194,7 @@ def recreate_fig_2a(min4_base, a_frac, t_frac, c_frac, g_frac):
             data[2].append(min4_base[i])
             data[3].append(colors[j])
 
-    # Bin data by x-position for use in boxplot
+    # Bin data by x-position for statistics
     bins = []
     for i in range(len(bases)**2):
         bins.append([])
@@ -187,10 +208,11 @@ def recreate_fig_2a(min4_base, a_frac, t_frac, c_frac, g_frac):
                             bins[4 * j + k].append(data[1][i])
                             binned = True
 
-    # Plot boxplots
+    # Plot confidence intervals/boxplots
     for i in range(len(x_ticks)):
         for j in range(len(base_ticks)):
-            plt.boxplot(bins[i * 4 + j], positions=[x_ticks[i] + base_ticks[j]], widths=3, showfliers=False)
+            plot_confidence_interval(x_ticks[i] + base_ticks[j], bins[i * 4 + j])
+            # plt.boxplot(bins[i * 4 + j], positions=[x_ticks[i] + base_ticks[j]], widths=3, showfliers=False)
 
     # Plot datapoints
     plt.scatter(data[0], data[1], c=data[3], s=5.0, alpha=0.2)
