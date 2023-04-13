@@ -5,6 +5,8 @@ import numpy as np
 from mylib import util
 import pandas as pd
 from sklearn.neighbors import KNeighborsRegressor
+from inDelphi.util import split_data_set
+
 import re
 
 sys.path.append('/cluster/mshen/')
@@ -114,8 +116,9 @@ def main(data_nm=''):
 
     # ========
     master_data = pickle.load(open("../pickle_data/inDelphi_counts_and_deletion_features.pkl", "rb"))
+    training_data, test_data = split_data_set(master_data)
 
-    res = master_data['counts']
+    res = training_data['counts']
     res['key_0'] = res.index
     # del_features = master_data['del_features']
     # res = pd.merge(master_data['counts'], master_data['del_features'],

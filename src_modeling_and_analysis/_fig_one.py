@@ -4,6 +4,7 @@ import seaborn as sns
 import _predict as predict
 import pandas as pd
 import pickle as pkl
+from inDelphi.util import split_data_set
 
 
 def use_fraction(master_data, exps):
@@ -96,9 +97,10 @@ def get_predicted(dataset):
 
 if __name__ == "__main__":
     master_data = pkl.load(open('../pickle_data/inDelphi_counts_and_deletion_features_p4.pkl', 'rb'))
-    predicted, exps = get_predicted(master_data)
+    training_data, test_data = split_data_set(master_data)
 
-    fraction = use_fraction(master_data, exps)
+    predicted, exps = get_predicted(test_data)
+    fraction = use_fraction(test_data, exps)
 
     truth = 1 - np.array(list(fraction.values()))
     predicted = 1 - np.array(list(predicted.values()))

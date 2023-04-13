@@ -1,6 +1,8 @@
 from mylib import util
 import pickle, subprocess, os
 from dataclasses import dataclass
+import random
+import math
 
 @dataclass
 class Filenames:
@@ -39,6 +41,7 @@ def count_num_folders(out_dir):
     for fold in os.listdir(out_dir):
         assert os.path.isdir(out_dir + fold), 'Not a folder!'
     return len(os.listdir(out_dir))
+
 def init_folders(out_place):
     util.ensure_dir_exists(out_place)
     num_folds = count_num_folders(out_place)
@@ -55,3 +58,20 @@ def init_folders(out_place):
     print_and_log('out dir: ' + out_letters, log_fn)
 
     return out_dir, out_letters, out_dir_params, log_fn
+
+def split_data_set(master_data):
+    counts_data_set = master_data['counts']
+    del_features_data_set = master_data['del_features']
+
+    all_samples = counts_data_set.index.unique(level="Sample_Name").values
+    k = math.floor(len(all_samples) * 0.8)
+    training_samples = random.sample(list(all_samples), k)
+    counts_training_data = counts_data_set.loc[training_samples]
+    counts_test_data = counts_data_set.drop(training_samples)
+    del_features_training_data = del_features_data_set.loc[training_samples]
+    del_features_test_data = del_features_data_set.drop(training_samples)
+
+    training_set = {'counts': counts_training_data,  'del_features': del_features_training_data}
+    test_set = {'counts': counts_test_data, 'del_features': del_features_test_data}
+
+    return training_set, test_set

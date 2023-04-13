@@ -10,6 +10,9 @@ from scipy.stats import entropy
 
 import d2_model as model
 
+from inDelphi.util import split_data_set
+
+
 # global vars
 nn_params = None
 nn2_params = None
@@ -200,7 +203,7 @@ def predict_all(seq, cutsite, rate_model, bp_model, normalizer):
 ##
 # Init
 ##
-def init_model(run_iter='aey', param_iter='abo'):
+def init_model(run_iter='aae', param_iter='aaa'):
     # run_iter = 'aav'
     # param_iter = 'aag'
     # run_iter = 'aaw'
@@ -245,8 +248,9 @@ if __name__ == "__main__":
     init_model()
     rate_model, bp_model, normalizer = init_rate_bp_models()
     dataset = pickle.load(open("../pickle_data/inDelphi_counts_and_deletion_features.pkl", "rb"))
-    dataset = pd.merge(dataset['counts'], dataset['del_features'],
-                       left_on=dataset['counts'].index, right_on=dataset['del_features'].index,
+    training_data, test_data = split_data_set(dataset)
+    dataset = pd.merge(training_data['counts'], training_data['del_features'],
+                       left_on=training_data['counts'].index, right_on=training_data['del_features'].index,
                        how="left")
     dataset['Length'] = [int(x[1].split("+")[1]) if x[1].split("+")[1].isdigit() else len(x[1].split("+")[1]) for x in
                          dataset["key_0"]]
@@ -262,9 +266,9 @@ if __name__ == "__main__":
 
     exps = list(set(dataset['exp']))
 
-
+    exps = exps[0:20] #select fewer exps for testing purposes
     for i, exp in enumerate(exps):
-
+        print(i)
         header_data = list(dataset[dataset["exp"] == exp]["exp"])[0].split("_")[:-1]
         header = ""
         for h in header_data:
