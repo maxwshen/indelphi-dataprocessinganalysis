@@ -60,6 +60,7 @@ def init_folders(out_place):
     return out_dir, out_letters, out_dir_params, log_fn
 
 def split_data_set(master_data):
+    random.seed(42)
     counts_data_set = master_data['counts']
     del_features_data_set = master_data['del_features']
 

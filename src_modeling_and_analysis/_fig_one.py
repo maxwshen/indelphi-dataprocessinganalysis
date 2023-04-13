@@ -5,6 +5,9 @@ import _predict as predict
 import pandas as pd
 import pickle as pkl
 from inDelphi.util import split_data_set
+from collections import defaultdict
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def use_fraction(master_data, exps):
@@ -42,6 +45,7 @@ def use_fraction(master_data, exps):
 
 def get_predicted(dataset):
     predict.init_model()
+    all_data = defaultdict(list)
     rate_model, bp_model, normalizer = predict.init_rate_bp_models()
     dataset = pd.merge(dataset['counts'], dataset['del_features'],
                        left_on=dataset['counts'].index, right_on=dataset['del_features'].index,
@@ -59,13 +63,9 @@ def get_predicted(dataset):
             full_dna_exps.append(line.strip("\n"))
 
     exps = list(set(dataset['exp']))
-
-    exps = exps[0:80]  # select fewer exps for testing purposes
-    result = {}
-
+    exps = exps[0:1]
     for i, exp in enumerate(exps):
-        fraction = 0
-        print(i)
+        print("sequence: ", exp)
         header_data = list(dataset[dataset["exp"] == exp]["exp"])[0].split("_")[:-1]
         header = ""
         for h in header_data:
@@ -81,17 +81,39 @@ def get_predicted(dataset):
             print(f"Experiment {exp} not in libA!")
             continue
         cutsites = dataset[dataset["exp"] == exp]["cutSite"]
+
+        fs = {'frameshift': 0, 'no_frameshift': 0}
+        print("cutsites: ", len(cutsites))
         for cutsite in cutsites:
             pred_del_df, pred_all_df, total_phi_score, rate_1bpins = predict.predict_all(sequence, cutsite, rate_model, bp_model, normalizer)
-            for index, row in pred_all_df.iterrows():
-                if row['Length'] % 3 != 0:
-                    fraction += row['Predicted_Frequency']
+            indel_pred, frame_shift = get_indel_pred(pred_all_df)
+            fs['frameshift'] += frame_shift['frameshift']
+            fs['no_frameshift'] += frame_shift['no_frameshift']
 
-            break # only use one cutsite for now,  still very unclear
+        total = fs['frameshift'] + fs['no_frameshift']
+        # fs['frameshift'] = fs['frameshift'] / total
+        # fs['no_frameshift'] = fs['no_frameshift'] / total
+        all_data[exp] = fs['no_frameshift'] / total
 
-        result[exp] = fraction
-    return result, exps
+    return all_data, exps
 
+def get_indel_pred(pred_all_df):
+    indel_pred = {}
+    indel_pred[1] = float(sum(pred_all_df[pred_all_df['Category'] == 'ins']['Predicted_Frequency']))
+
+    for del_len in range(1, pred_all_df['Length'].max() + 1):
+        freq = float(sum(pred_all_df[(pred_all_df['Category'] == 'del') & (pred_all_df['Length'] == del_len)]['Predicted_Frequency']))
+        dl_key = del_len * -1
+        indel_pred[dl_key] = freq
+
+    frame_shift = {'frameshift': 0, 'no_frameshift': 0}
+    for indel_len in indel_pred:
+        if indel_len % 3 == 0:
+            frame_shift['frameshift'] += indel_pred[indel_len]
+        else:
+            frame_shift['no_frameshift'] += indel_pred[indel_len]
+
+    return indel_pred, frame_shift
 
 
 
