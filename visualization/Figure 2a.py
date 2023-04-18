@@ -232,5 +232,10 @@ def recreate_fig_2a(min4_base, a_frac, t_frac, c_frac, g_frac):
 if __name__ == "__main__":
     # dummy_scatterplot()
 
+    # Using the same data as in the paper
     data = pd.read_excel("41586_2018_686_MOESM4_ESM.xlsx", sheet_name=0)
+    recreate_fig_2a(data["Base"], data["A frac"], data["T frac"], data["C frac"], data["G frac"])
+
+    # Using the data from our own training
+    data = pd.read_csv("1bpins_stats.csv")
     recreate_fig_2a(data["Base"], data["A frac"], data["T frac"], data["C frac"], data["G frac"])
