@@ -1,3 +1,5 @@
+import re
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -63,7 +65,7 @@ def get_predicted(dataset):
             full_dna_exps.append(line.strip("\n"))
 
     exps = list(set(dataset['exp']))
-    exps = exps[0:1]
+    exps = list(filter(lambda x: re.match(".*overbeek.*", x), exps))
     for i, exp in enumerate(exps):
         print("sequence: ", exp)
         header_data = list(dataset[dataset["exp"] == exp]["exp"])[0].split("_")[:-1]
