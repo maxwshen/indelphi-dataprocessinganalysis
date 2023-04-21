@@ -1,3 +1,6 @@
 [submodule "mylib"]
 	path = mylib
 	url = git@github.com:maxwshen/mylib.git
+[submodule "research_questions/Menno/seq2vec"]
+	path = research_questions/Menno/seq2vec
+	url = git@github.com:anuradhawick/seq2vec.git
