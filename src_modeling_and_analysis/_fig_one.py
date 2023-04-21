@@ -10,6 +10,7 @@ from inDelphi.util import split_data_set
 from collections import defaultdict
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+from scipy.stats import pearsonr
 
 
 def use_fraction(master_data, exps):
@@ -95,7 +96,7 @@ def get_predicted(dataset):
         total = fs['frameshift'] + fs['no_frameshift']
         # fs['frameshift'] = fs['frameshift'] / total
         # fs['no_frameshift'] = fs['no_frameshift'] / total
-        all_data[exp] = fs['no_frameshift'] / total
+        all_data[exp] = fs['frameshift'] / total
 
     return all_data, exps
 
@@ -111,9 +112,9 @@ def get_indel_pred(pred_all_df):
     frame_shift = {'frameshift': 0, 'no_frameshift': 0}
     for indel_len in indel_pred:
         if indel_len % 3 == 0:
-            frame_shift['frameshift'] += indel_pred[indel_len]
-        else:
             frame_shift['no_frameshift'] += indel_pred[indel_len]
+        else:
+            frame_shift['frameshift'] += indel_pred[indel_len]
 
     return indel_pred, frame_shift
 
@@ -126,14 +127,16 @@ if __name__ == "__main__":
     predicted, exps = get_predicted(test_data)
     fraction = use_fraction(test_data, exps)
 
-    truth = 1 - np.array(list(fraction.values()))
-    predicted = 1 - np.array(list(predicted.values()))
+    truth = np.rint(100 * (1 - np.array(list(fraction.values()))))
+    predicted = np.rint(100 *( 1- np.array(list(predicted.values()))))
+    corr, p_value = pearsonr(truth, predicted)
 
-    plt.plot([0, 1], linestyle='dashed', c='black')
+    plt.rcParams["figure.figsize"] = (10, 6)
+    plt.plot([0, 100], [0,100], linestyle='dashed', c='black')
     plt.scatter(truth, predicted)
+    plt.xlabel("Endogenously observed reading frame \n frequencies among all edited products from the overbeek set in (%)")
+    plt.ylabel("Predicted reading frame \n frequencies among all major editing products")
+    plt.title("inDelphi Pearson r = " + "{:.2f}".format(corr))
     sns.regplot(x=truth, y=predicted, scatter=False, color='red')
 
-    plt.savefig("figures/figure_one.png")
-
-    corr = np.corrcoef(truth, predicted)
-    print(corr)
+    plt.savefig("figures/figure_one_p2.png")
